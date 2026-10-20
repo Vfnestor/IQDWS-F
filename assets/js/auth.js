@@ -2,10 +2,9 @@ const roleNames = {
     'inspector': 'بازرس خط', 'expert': 'کارشناس قطعه', 'dept_head': 'مسول بخش',
     'office_head': 'رئیس اداره', 'manager': 'مدیر کیفیت',
     'sys_admin': 'مدیر سیستم', 'support': 'پشتیبان',
-    's_inspector': 'بازرس سازنده', 's_engineer': 'مهندس سازنده'
+    'supplier': 'تأمین‌کننده (سازنده)' // نقش جدید
 };
 
-// مقداردهی اولیه دیتابیس کاربران (برای تست آفلاین)
 function initUsersDB() {
     if (!localStorage.getItem('iqdws_users')) {
         const defaultUsers = [
@@ -14,7 +13,8 @@ function initUsersDB() {
             { username: '102', password: '123456', firstName: 'محمد', lastName: 'محمدی', role: 'expert', isFirstLogin: true },
             { username: '103', password: '123456', firstName: 'حسین', lastName: 'حسینی', role: 'dept_head', isFirstLogin: true },
             { username: '104', password: '123456', firstName: 'علی', lastName: 'کریمی', role: 'office_head', isFirstLogin: true },
-            { username: '105', password: '123456', firstName: 'سعید', lastName: 'احمدی', role: 's_inspector', isFirstLogin: true }
+            // کاربر سازنده نمونه (نام کاربری بر اساس شرکت)
+            { username: 'pars_elec', password: '123456', companyName: 'الکترونیک پارس', role: 'supplier', isFirstLogin: true }
         ];
         localStorage.setItem('iqdws_users', JSON.stringify(defaultUsers));
     }
@@ -30,7 +30,6 @@ async function handleLogin(e) {
     btn.disabled = true;
     btn.innerText = 'در حال بررسی...';
 
-    // شبیه‌سازی تاخیر شبکه
     setTimeout(() => {
         const users = JSON.parse(localStorage.getItem('iqdws_users'));
         const user = users.find(u => u.username === userIn && u.password === passIn);
@@ -43,7 +42,6 @@ async function handleLogin(e) {
         }
 
         if (user.isFirstLogin) {
-            // درخواست تغییر رمز
             Utils.openModal(`
                 <h3 style="color:var(--primary); margin-bottom:15px;">تغییر رمز عبور (اجباری)</h3>
                 <p style="font-size:12px; color:#666; margin-bottom:15px;">از آنجا که این اولین ورود شماست، لطفاً رمز عبور خود را تغییر دهید.</p>
@@ -79,21 +77,30 @@ function changeFirstPassword(username) {
 
 function loginSuccess(user) {
     localStorage.setItem('iqdws_token', 'offline_token_' + Date.now());
-    localStorage.setItem('iqdws_session', JSON.stringify({
+    
+    // ساخت شیء سشن
+    const sessionData = {
         username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
         roleId: user.role,
         roleName: roleNames[user.role]
-    }));
+    };
+
+    // اگر کاربر سازنده بود، نام شرکت را ذخیره کن، در غیر این صورت نام و نام خانوادگی
+    if (user.role === 'supplier') {
+        sessionData.displayName = user.companyName;
+    } else {
+        sessionData.displayName = `${user.firstName} ${user.lastName}`;
+    }
+
+    localStorage.setItem('iqdws_session', JSON.stringify(sessionData));
 
     // هدایت بر اساس نقش
-    if (['inspector', 'expert', 'dept_head', 'office_head', 'manager'].includes(user.role)) {
-        window.location.href = 'main.html';
-    } else if (['s_inspector', 's_engineer'].includes(user.role)) {
+    if (user.role === 'supplier') {
         window.location.href = 'supplier.html';
     } else if (['sys_admin', 'support'].includes(user.role)) {
         window.location.href = 'admin.html';
+    } else {
+        window.location.href = 'main.html'; // بازرس، کارشناس، مدیر و...
     }
 }
 
