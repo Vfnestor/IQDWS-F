@@ -1,18 +1,40 @@
-// توابع عمومی برای استفاده در کل برنامه
 const Utils = {
-    // تولید شناسه یکتا
-    generateId: (prefix) => {
-        return `${prefix}-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000) + 1000}`;
+    // تولید کد منحصر به فرد ایراد: ABC012345
+    generateDefectCode: (severity) => {
+        // ۱. حرف سال (A=1400, B=1401, C=1402...)
+        const currentYear = new Date().getFullYear() % 100; // مثلا 26 (برای 2026)
+        const yearLetter = String.fromCharCode(65 + (currentYear % 26)); // ساده شده
+
+        // ۲. حرف گرید/شدت
+        const sevMap = { 'critical': 'C', 'major': 'M', 'minor': 'L', 'cosmetic': 'K' };
+        const sevLetter = sevMap[severity] || 'X';
+
+        // ۳. حرف سرریز (وقتی اعداد به 999999 رسید، از A به B می‌رود)
+        let overflowCount = parseInt(localStorage.getItem('defect_overflow') || '0');
+        const overflowLetter = String.fromCharCode(65 + (overflowCount % 26));
+
+        // ۴. عدد ۶ رقمی
+        let currentSeq = parseInt(localStorage.getItem('defect_seq') || '0');
+        currentSeq++;
+        
+        if (currentSeq > 999999) {
+            currentSeq = 1;
+            overflowCount++;
+            localStorage.setItem('defect_overflow', overflowCount);
+        }
+        localStorage.setItem('defect_seq', currentSeq);
+
+        const seqString = currentSeq.toString().padStart(6, '0');
+
+        return `${yearLetter}${sevLetter}${overflowLetter}${seqString}`;
     },
 
-    // فرمت تاریخ به شمسی
     formatDate: (dateString) => {
         if (!dateString) return '—';
         const d = new Date(dateString);
         return d.toLocaleDateString('fa-IR') + ' ' + d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
     },
 
-    // نمایش پیام (Toast)
     toast: (message, type = 'success') => {
         let toast = document.getElementById('toast');
         if (!toast) {
@@ -27,7 +49,6 @@ const Utils = {
         setTimeout(() => { toast.style.opacity = '0'; }, 3000);
     },
 
-    // مدیریت مودال‌ها
     openModal: (html) => {
         let modal = document.getElementById('global-modal');
         if (!modal) {
