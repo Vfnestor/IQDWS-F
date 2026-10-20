@@ -1,50 +1,54 @@
-// آدرس بک‌اند (در حالت لوکال 3000 است، بعداً به آدرس سرور ابری تغییر می‌کند)
 const API_BASE_URL = 'http://localhost:3000/api';
 
-// ذخیره توکن کاربر پس از ورود
 const getToken = () => localStorage.getItem('iqdws_token');
+const getHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getToken()}`
+});
 
 const API = {
-    // ورود به سامانه
-    login: async (role, app) => {
-        const res = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role, app })
-        });
-        const data = await res.json();
-        if (res.ok) localStorage.setItem('iqdws_token', data.token);
-        return data;
-    },
-
-    // دریافت لیست ایرادها
+    // --- ایرادها ---
     getDefects: async () => {
-        const res = await fetch(`${API_BASE_URL}/defects`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
-        if (!res.ok) throw new Error('خطا در دریافت اطلاعات');
+        const res = await fetch(`${API_BASE_URL}/defects`, { headers: getHeaders() });
+        if (!res.ok) throw new Error('خطا در دریافت ایرادها');
         return await res.json();
     },
-    
-    // ثبت ایراد جدید
     createDefect: async (data) => {
         const res = await fetch(`${API_BASE_URL}/defects`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getToken()}`
-            },
-            body: JSON.stringify(data)
+            method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
         });
-        if (!res.ok) throw new Error('خطا در ثبت اطلاعات');
         return await res.json();
     },
 
-    // دریافت اخطارها
+    // --- اخطارها ---
     getQANs: async () => {
-        const res = await fetch(`${API_BASE_URL}/defects`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
+        const res = await fetch(`${API_BASE_URL}/qans`, { headers: getHeaders() });
+        if (!res.ok) throw new Error('خطا در دریافت اخطارها');
+        return await res.json();
+    },
+    createQAN: async (data) => {
+        const res = await fetch(`${API_BASE_URL}/qans`, {
+            method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
         });
-        return await res.json(); // فعلاً برای تست از همان دیتای ایرادها استفاده می‌کنیم
+        return await res.json();
+    },
+    updateQANStatus: async (id, status) => {
+        const res = await fetch(`${API_BASE_URL}/qans/${id}/status`, {
+            method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status })
+        });
+        return await res.json();
+    },
+
+    // --- 8D ---
+    get8DByQAN: async (qanId) => {
+        const res = await fetch(`${API_BASE_URL}/eightd/qan/${qanId}`, { headers: getHeaders() });
+        if (!res.ok) return null; // یعنی هنوز پاسخی ثبت نشده
+        return await res.json();
+    },
+    save8D: async (data) => {
+        const res = await fetch(`${API_BASE_URL}/eightd`, {
+            method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
+        });
+        return await res.json();
     }
 };
