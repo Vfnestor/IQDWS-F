@@ -1,7 +1,12 @@
 // اتصال به APIهای بک‌اند
 const AdminAPI = {
     getToken: () => localStorage.getItem('iqdws_token'),
-    getHeaders: function() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.getToken()}` }; },
+    getHeaders: function() { 
+        return { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${this.getToken()}` 
+        }; 
+    },
     
     getStats: async () => {
         const [resDefects, resQANs, resBugs] = await Promise.all([
