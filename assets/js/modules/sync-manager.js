@@ -1,25 +1,28 @@
-// مدیریت همگام‌سازی داده‌های آفلاین با سرور
 const SyncManager = {
     init: async function() {
         await OfflineDB.init();
-        window.addEventListener('online', () => this.processQueue());
-        // بررسی دوره‌ای هر ۳۰ ثانیه
-        setInterval(() => this.processQueue(), 30000);
-        this.processQueue();
+        // ما دیگر به صورت خودکار آپلود نمی‌کنیم. فقط کاربر با دکمه این کار را می‌کند.
     },
 
     processQueue: async function() {
-        if (!navigator.onLine) return;
+        if (!navigator.onLine) {
+            alert('شما به اینترنت متصل نیستید.');
+            return;
+        }
         
         const queue = await OfflineDB.getQueue();
-        if (queue.length === 0) return;
+        if (queue.length === 0) {
+            alert('هیچ داده جدیدی برای ارسال به سرور وجود ندارد.');
+            return;
+        }
 
-        console.log(`Syncing ${queue.length} offline items...`);
+        let successCount = 0;
+        const syncBtn = document.getElementById('sync-btn');
+        if (syncBtn) syncBtn.innerText = 'در حال ارسال...';
 
         for (let item of queue) {
             try {
-                // ارسال داده به سرور
-                const res = await fetch(`${API_BASE_URL}${item.endpoint}`, {
+                const res = await fetch(`${window.API_BASE_URL}${item.endpoint}`, {
                     method: item.method,
                     headers: {
                         'Content-Type': 'application/json',
@@ -29,16 +32,22 @@ const SyncManager = {
                 });
 
                 if (res.ok) {
-                    // اگر موفق بود، از صف حذف کن
                     await OfflineDB.clearItem(item.id);
-                    console.log(`Item ${item.id} synced successfully.`);
-                } else if (res.status === 401) {
-                    // اگر توکن منقضی شده بود، صف را نگه دار تا لاگین مجدد
-                    break;
+                    successCount++;
                 }
             } catch (error) {
                 console.error("Sync failed for item", item.id, error);
             }
+        }
+        
+        if (syncBtn) syncBtn.innerText = '☁️ آپلود به سرور';
+        
+        if (successCount > 0) {
+            alert(`${successCount} مورد با موفقیت به سرور ارسال شد.`);
+            if (typeof renderDefectList === 'function') renderDefectList(); // رفرش لیست
+            if (typeof renderDashboard === 'function') renderDashboard(); // رفرش داشبورد
+        } else {
+            alert('ارسال به سرور با خطا مواجه شد. (سرور ممکن است خواب باشد)');
         }
     }
 };
