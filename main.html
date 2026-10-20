@@ -6,6 +6,8 @@
     <title>سامانه مادر | IQDWS</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/tables.css">
 </head>
 <body>
     <div id="app" class="app-layout">
@@ -20,16 +22,41 @@
             <nav class="sidebar">
                 <a onclick="navigate('dashboard')" class="nav-item active">📊 داشبورد</a>
                 <a onclick="navigate('new-defect')" class="nav-item">➕ ثبت ایراد</a>
-                <a onclick="navigate('defects')" class="nav-item">📋 لیست ایرادها</a>
+                <a onclick="navigate('qans')" class="nav-item">⚠️ اخطارهای کیفی</a>
             </nav>
-            <main class="content" id="content-area">
-                <!-- محتوا توسط جاوااسکریپت لود می‌شود -->
-            </main>
+            <main class="content" id="content-area"></main>
         </div>
     </div>
 
+    <!-- لایه‌های اصلی -->
     <script src="assets/js/store.js"></script>
     <script src="assets/js/auth.js"></script>
-    <script src="assets/js/main-app.js"></script>
+    
+    <!-- ماژول‌های جدید -->
+    <script src="assets/js/modules/utils.js"></script>
+    <script src="assets/js/modules/api.js"></script>
+    <script src="assets/js/modules/dashboard.js"></script>
+    <script src="assets/js/modules/defect.js"></script>
+    <script src="assets/js/modules/qan.js"></script>
+
+    <!-- کنترلر اصلی -->
+    <script>
+        const session = checkAuth('main');
+        if (session) document.getElementById('user-name').innerText = session.roleName;
+
+        function navigate(view) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const navItems = document.querySelectorAll('.nav-item');
+            if(view === 'dashboard') navItems[0].classList.add('active');
+            if(view === 'new-defect') navItems[1].classList.add('active');
+            if(view === 'qans') navItems[2].classList.add('active');
+
+            if (view === 'dashboard') renderDashboard();
+            else if (view === 'new-defect') renderNewDefectForm();
+            else if (view === 'qans') renderQANList();
+        }
+
+        window.onload = () => navigate('dashboard');
+    </script>
 </body>
 </html>
