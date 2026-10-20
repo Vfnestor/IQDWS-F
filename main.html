@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سامانه مادر | IQDWS</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0b3d6b">
-    
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/forms.css">
@@ -25,31 +22,24 @@
                 <button id="sync-btn" class="btn btn-sm" style="background:#2e7d32; color:white; margin-left:15px;" onclick="SyncManager.processQueue()">
                     ☁️ آپلود
                 </button>
-                <span id="user-name">نقش کاربر</span>
+                <span id="user-info" style="font-weight:bold; font-size:13px;"></span>
                 <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </header>
         
         <div class="app-body">
-            <!-- Overlay for mobile menu -->
             <div class="sidebar-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
-            
-            <!-- Hamburger Menu -->
             <nav class="sidebar" id="main-sidebar">
                 <div class="sidebar-header">
                     <span>منوی اصلی</span>
                     <button class="close-btn" onclick="toggleMenu()">✖</button>
                 </div>
-                <div id="nav-items-container">
-                    <!-- منو توسط جاوااسکریپت پر می‌شود -->
-                </div>
+                <div id="nav-items-container"></div>
             </nav>
-            
             <main class="content" id="content-area"></main>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/modules/utils.js"></script>
@@ -67,46 +57,26 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
         }
-
         SyncManager.init();
+        
         const session = checkAuth('main');
-        if (session) document.getElementById('user-name').innerText = session.roleName;
+        // نمایش نام و نقش در هدر
+        if (session) {
+            document.getElementById('user-info').innerText = `${session.firstName} ${session.lastName} (${session.roleName})`;
+        }
 
-        // تنظیمات منو بر اساس نقش
         function buildMenu() {
             let menu = [];
             if (session.roleId === 'inspector') {
-                menu = [
-                    { id: 'dashboard', title: 'داشبورد', icon: '📊' },
-                    { id: 'new-defect', title: 'ثبت ایراد', icon: '➕' },
-                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' }
-                ];
+                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'new-defect', title: 'ثبت ایراد', icon: '➕' }, { id: 'defects', title: 'لیست ایرادها', icon: '📋' }];
             } else if (session.roleId === 'expert') {
-                menu = [
-                    { id: 'dashboard', title: 'داشبورد', icon: '📊' },
-                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' },
-                    { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }
-                ];
+                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'defects', title: 'لیست ایرادها', icon: '📋' }, { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }];
             } else if (session.roleId === 'dept_head' || session.roleId === 'office_head') {
-                menu = [
-                    { id: 'dashboard', title: 'داشبورد', icon: '📊' },
-                    { id: 'qans', title: 'تاییدیه اخطارها', icon: '✅' }
-                ];
+                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'qans', title: 'تاییدیه اخطارها', icon: '✅' }];
             } else {
-                menu = [
-                    { id: 'dashboard', title: 'داشبورد', icon: '📊' },
-                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' },
-                    { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' },
-                    { id: 'analytics', title: 'عملکرد سازندگان', icon: '🏢' }
-                ];
+                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'defects', title: 'لیست ایرادها', icon: '📋' }, { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }, { id: 'analytics', title: 'عملکرد سازندگان', icon: '🏢' }];
             }
-
-            const container = document.getElementById('nav-items-container');
-            container.innerHTML = menu.map(item => `
-                <a onclick="navigate('${item.id}')" class="nav-item" id="nav-${item.id}">
-                    <span>${item.icon}</span> ${item.title}
-                </a>
-            `).join('');
+            document.getElementById('nav-items-container').innerHTML = menu.map(item => `<a onclick="navigate('${item.id}')" class="nav-item" id="nav-${item.id}"><span>${item.icon}</span> ${item.title}</a>`).join('');
         }
 
         function toggleMenu() {
@@ -115,9 +85,7 @@
         }
 
         function navigate(view) {
-            // بستن منو در حالت موبایل
             if(window.innerWidth < 768) toggleMenu();
-
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${view}`);
             if(activeNav) activeNav.classList.add('active');
@@ -127,13 +95,9 @@
             else if(view === 'defects') renderDefectList();
             else if(view === 'qans') renderQANList();
             else if(view === 'analytics') renderMainAnalytics();
-            else if(view === 'defect-detail') renderDefectDetail(state.currentParam);
         }
 
-        window.onload = () => {
-            buildMenu();
-            navigate('dashboard');
-        };
+        window.onload = () => { buildMenu(); navigate('dashboard'); };
     </script>
 </body>
 </html>
