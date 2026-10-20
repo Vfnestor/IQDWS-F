@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/tables.css">
+    <link rel="stylesheet" href="assets/css/analytics.css">
 </head>
 <body>
     <div id="app" class="app-layout">
@@ -23,23 +24,20 @@
                 <a onclick="navigate('dashboard')" class="nav-item active">📊 داشبورد</a>
                 <a onclick="navigate('new-defect')" class="nav-item">➕ ثبت ایراد</a>
                 <a onclick="navigate('qans')" class="nav-item">⚠️ اخطارهای کیفی</a>
+                <a onclick="navigate('analytics')" class="nav-item">🏢 عملکرد سازندگان</a>
             </nav>
             <main class="content" id="content-area"></main>
         </div>
     </div>
 
-    <!-- لایه‌های اصلی -->
-    <script src="assets/js/store.js"></script>
     <script src="assets/js/auth.js"></script>
-    
-    <!-- ماژول‌های جدید -->
     <script src="assets/js/modules/utils.js"></script>
     <script src="assets/js/modules/api.js"></script>
     <script src="assets/js/modules/dashboard.js"></script>
     <script src="assets/js/modules/defect.js"></script>
     <script src="assets/js/modules/qan.js"></script>
+    <script src="assets/js/modules/main-analytics.js"></script>
 
-    <!-- کنترلر اصلی -->
     <script>
         const session = checkAuth('main');
         if (session) document.getElementById('user-name').innerText = session.roleName;
@@ -47,13 +45,10 @@
         function navigate(view) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navItems = document.querySelectorAll('.nav-item');
-            if(view === 'dashboard') navItems[0].classList.add('active');
-            if(view === 'new-defect') navItems[1].classList.add('active');
-            if(view === 'qans') navItems[2].classList.add('active');
-
-            if (view === 'dashboard') renderDashboard();
-            else if (view === 'new-defect') renderNewDefectForm();
-            else if (view === 'qans') renderQANList();
+            if(view === 'dashboard') { navItems[0].classList.add('active'); renderDashboard(); }
+            if(view === 'new-defect') { navItems[1].classList.add('active'); renderNewDefectForm(); }
+            if(view === 'qans') { navItems[2].classList.add('active'); renderQANList(); }
+            if(view === 'analytics') { navItems[3].classList.add('active'); renderMainAnalytics(); }
         }
 
         window.onload = () => navigate('dashboard');
