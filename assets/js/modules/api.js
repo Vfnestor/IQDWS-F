@@ -1,44 +1,50 @@
-// این فایل شبیه‌ساز بک‌اند است. در مرحله بعد، فقط این فایل را با fetch() به سرور واقعی تغییر می‌دهیم.
+// آدرس بک‌اند (در حالت لوکال 3000 است، بعداً به آدرس سرور ابری تغییر می‌کند)
+const API_BASE_URL = 'http://localhost:3000/api';
+
+// ذخیره توکن کاربر پس از ورود
+const getToken = () => localStorage.getItem('iqdws_token');
+
 const API = {
-    // دریافت داده‌ها
-    getDefects: () => {
-        return JSON.parse(localStorage.getItem('iqdws_defects')) || [];
+    // ورود به سامانه
+    login: async (role, app) => {
+        const res = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role, app })
+        });
+        const data = await res.json();
+        if (res.ok) localStorage.setItem('iqdws_token', data.token);
+        return data;
+    },
+
+    // دریافت لیست ایرادها
+    getDefects: async () => {
+        const res = await fetch(`${API_BASE_URL}/defects`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (!res.ok) throw new Error('خطا در دریافت اطلاعات');
+        return await res.json();
     },
     
-    createDefect: (data) => {
-        let defects = API.getDefects();
-        const newDefect = {
-            id: Utils.generateId('DEF'),
-            ...data,
-            status: 'registered',
-            createdAt: new Date().toISOString()
-        };
-        defects.push(newDefect);
-        localStorage.setItem('iqdws_defects', JSON.stringify(defects));
-        return newDefect;
+    // ثبت ایراد جدید
+    createDefect: async (data) => {
+        const res = await fetch(`${API_BASE_URL}/defects`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('خطا در ثبت اطلاعات');
+        return await res.json();
     },
 
-    getQANs: () => {
-        return JSON.parse(localStorage.getItem('iqdws_qans')) || [];
-    },
-
-    createQAN: (data) => {
-        let qans = API.getQANs();
-        const newQAN = {
-            id: Utils.generateId('QAN'),
-            ...data,
-            status: 'pending_dept',
-            createdAt: new Date().toISOString()
-        };
-        qans.push(newQAN);
-        localStorage.setItem('iqdws_qans', JSON.stringify(qans));
-        return newQAN;
-    },
-
-    save8D: (data) => {
-        let eightDs = JSON.parse(localStorage.getItem('iqdws_8d')) || [];
-        eightDs.push({ ...data, createdAt: new Date().toISOString() });
-        localStorage.setItem('iqdws_8d', JSON.stringify(eightDs));
-        return true;
+    // دریافت اخطارها
+    getQANs: async () => {
+        const res = await fetch(`${API_BASE_URL}/defects`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        return await res.json(); // فعلاً برای تست از همان دیتای ایرادها استفاده می‌کنیم
     }
 };
