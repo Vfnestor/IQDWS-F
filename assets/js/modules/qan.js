@@ -3,13 +3,12 @@ async function openQANForm(defectCode) {
     if(!d) return Utils.toast('ایراد یافت نشد', 'error');
 
     const role = JSON.parse(localStorage.getItem('iqdws_session')).roleId;
-    // مسول بخش نیاز به تایید خودش ندارد (استثنا)
     const initialStatus = role === 'dept_head' ? 'pending_office' : 'pending_dept';
 
     Utils.openModal(`
         <h3 style="color:var(--warning); margin-bottom:15px;">صدور اخطار کیفی برای ${d.defectCode}</h3>
         <div class="form-field">
-            <label>عنوان ایراد (از ایراد خوانده شده)</label>
+            <label>عنوان ایراد</label>
             <input type="text" class="form-control" value="${d.title}" readonly style="background:#f5f5f5;">
         </div>
         <div class="form-field">
@@ -35,6 +34,7 @@ async function openQANForm(defectCode) {
 }
 
 async function submitQAN(defectCode, initialStatus) {
+    const session = JSON.parse(localStorage.getItem('iqdws_session'));
     const qanData = {
         qanId: 'QAN-' + Date.now(),
         defectCode: defectCode,
@@ -43,13 +43,14 @@ async function submitQAN(defectCode, initialStatus) {
         penalty: document.getElementById('q_penalty').value,
         desc: document.getElementById('q_desc').value,
         status: initialStatus,
+        createdBy: session.username,
+        createdByName: session.displayName,
         createdAt: new Date().toISOString()
     };
 
     await OfflineDB.saveQAN(qanData);
     await OfflineDB.addToQueue({ endpoint: '/qans', method: 'POST', data: qanData });
 
-    // تغییر وضعیت ایراد
     const d = await OfflineDB.getDefectByCode(defectCode);
     d.status = 'qan_issued';
     await OfflineDB.saveDefect(d);
@@ -69,7 +70,7 @@ async function renderQANList() {
             <h2 class="card-title">اخطارهای کیفی</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>شناسه</th><th>کد ایراد</th><th>سطح</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                    <thead><tr><th>شناسه</th><th>کد ایراد</th><th>سطح</th><th>صادرکننده</th><th>وضعیت</th><th>عملیات</th></tr></thead>
                     <tbody>
                         ${qans.map(q => {
                             let actions = '';
@@ -92,11 +93,12 @@ async function renderQANList() {
                                     <td style="font-family:monospace;">${q.qanId.split('-')[1]}</td>
                                     <td style="color:var(--primary); font-weight:bold;">${q.defectCode}</td>
                                     <td>${q.level}</td>
+                                    <td>${q.createdByName || q.createdBy}</td>
                                     <td><span class="badge status-${q.status}">${q.status}</span></td>
                                     <td>${actions}</td>
                                 </tr>
                             `;
-                        }).join('') || '<tr><td colspan="5" style="text-align:center;">اخطاری یافت نشد</td></tr>'}
+                        }).join('') || '<tr><td colspan="6" style="text-align:center;">اخطاری یافت نشد</td></tr>'}
                     </tbody>
                 </table>
             </div>
@@ -117,7 +119,7 @@ async function updateQANStatus(qanId, newStatus) {
 
 async function rejectQAN(qanId) {
     const reason = prompt("لطفاً دلیل رد اخطار را وارد کنید:");
-    if(reason === null) return; // کاربر لغو کرد
+    if(reason === null) return;
     if(!reason.trim()) return alert('وارد کردن دلیل الزامی است.');
 
     const qans = await OfflineDB.getQANs();
