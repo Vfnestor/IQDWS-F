@@ -1,5 +1,4 @@
-// Service Worker برای پشتیبانی از حالت آفلاین
-const CACHE_NAME = 'iqdws-cache-v1';
+const CACHE_NAME = 'iqdws-cache-v2'; // تغییر نسخه به 2
 const urlsToCache = [
   './index.html',
   './main.html',
@@ -9,25 +8,30 @@ const urlsToCache = [
   './assets/css/components.css',
   './assets/css/forms.css',
   './assets/css/tables.css',
-  './assets/js/auth.js',
-  './assets/js/config.js'
+  './assets/js/config.js', // اضافه شدن فایل تنظیمات
+  './assets/js/auth.js'
 ];
 
 self.addEventListener('install', event => {
+  // پاک کردن کش‌های قدیمی هنگام نصب نسخه جدید
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
-  // برای درخواست‌های API، ابتدا شبکه سپس کش (Network First)
   if (event.request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
+    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
   } else {
-    // برای فایل‌های استاتیک، ابتدا کش سپس شبکه (Cache First)
     event.respondWith(
       caches.match(event.request).then(response => {
         return response || fetch(event.request);
