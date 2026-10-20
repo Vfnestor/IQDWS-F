@@ -27,34 +27,62 @@ function selectApp(appName) {
     const roleSelect = document.getElementById('role-select');
     
     roleContainer.style.display = 'block';
-    // اصلاح باگ: استفاده از تگ option برای ساخت صحیح لیست کشویی
     roleSelect.innerHTML = roles[appName].map(r => `<option value="${r.id}">${r.name}</option>`).join('');
     
     document.getElementById('login-btn').disabled = false;
 }
 
-function handleLogin() {
+// اصلاح حیاتی: این تابع باید به صورت async باشد و به بک‌اند وصل شود
+async function handleLogin() {
     const roleId = document.getElementById('role-select').value;
     const roleName = roles[selectedApp].find(r => r.id === roleId).name;
+    const loginBtn = document.getElementById('login-btn');
     
-    // ذخیره سشن (برای نسخه اولیه از توکن ساده استفاده می‌کنیم)
-    localStorage.setItem('iqdws_session', JSON.stringify({
-        app: selectedApp,
-        roleId: roleId,
-        roleName: roleName
-    }));
-    
-    if (selectedApp === 'main') window.location.href = 'main.html';
-    else if (selectedApp === 'supplier') window.location.href = 'supplier.html';
-    else if (selectedApp === 'admin') window.location.href = 'admin.html';
+    loginBtn.disabled = true;
+    loginBtn.innerText = 'در حال اتصال به سرور...';
+
+    try {
+        // درخواست به بک‌اند برای گرفتن توکن
+        const res = await fetch('http://localhost:3000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: roleId, app: selectedApp })
+        });
+
+        if (!res.ok) throw new Error('خطا در احراز هویت');
+        
+        const data = await res.json();
+
+        // ذخیره توکن واقعی و سشن
+        localStorage.setItem('iqdws_token', data.token);
+        localStorage.setItem('iqdws_session', JSON.stringify({
+            app: selectedApp,
+            roleId: roleId,
+            roleName: roleName
+        }));
+        
+        // هدایت به صفحه مربوطه
+        if (selectedApp === 'main') window.location.href = 'main.html';
+        else if (selectedApp === 'supplier') window.location.href = 'supplier.html';
+        else if (selectedApp === 'admin') window.location.href = 'admin.html';
+
+    } catch (error) {
+        alert('خطا در اتصال به سرور. لطفا مطمئن شوید بک‌اند (npm run dev) روشن است.');
+        loginBtn.disabled = false;
+        loginBtn.innerText = 'ورود به سامانه';
+    }
 }
 
 function checkAuth(expectedApp) {
     const sessionStr = localStorage.getItem('iqdws_session');
-    if (!sessionStr) {
+    const token = localStorage.getItem('iqdws_token');
+    
+    // اگر سشن یا توکن نبود، برگرد به صفحه ورود
+    if (!sessionStr || !token) {
         window.location.href = 'index.html';
         return null;
     }
+    
     const session = JSON.parse(sessionStr);
     if (session.app !== expectedApp) {
         window.location.href = 'index.html';
@@ -65,5 +93,6 @@ function checkAuth(expectedApp) {
 
 function logout() {
     localStorage.removeItem('iqdws_session');
+    localStorage.removeItem('iqdws_token');
     window.location.href = 'index.html';
 }
