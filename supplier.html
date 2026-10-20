@@ -21,23 +21,17 @@
         <div class="app-body">
             <nav class="sidebar">
                 <a onclick="navigate('dashboard')" class="nav-item active">📊 داشبورد</a>
-                <a onclick="navigate('inspection')" class="nav-item">🔍 بازرسی قطعات</a>
                 <a onclick="navigate('qans')" class="nav-item">⚠️ اخطارهای دریافتی</a>
             </nav>
             <main class="content" id="content-area"></main>
         </div>
     </div>
 
-    <!-- لایه‌های اصلی -->
-    <script src="assets/js/store.js"></script>
     <script src="assets/js/auth.js"></script>
-    
-    <!-- ماژول‌های جدید -->
     <script src="assets/js/modules/utils.js"></script>
     <script src="assets/js/modules/api.js"></script>
     <script src="assets/js/modules/8d.js"></script>
 
-    <!-- کنترلر اصلی -->
     <script>
         const session = checkAuth('supplier');
         if (session) document.getElementById('user-name').innerText = session.roleName;
@@ -45,17 +39,19 @@
         function navigate(view) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navItems = document.querySelectorAll('.nav-item');
-            if(view === 'dashboard') navItems[0].classList.add('active');
-            if(view === 'inspection') navItems[1].classList.add('active');
-            if(view === 'qans') navItems[2].classList.add('active');
-
-            const content = document.getElementById('content-area');
+            
             if (view === 'dashboard') {
-                content.innerHTML = `<h2 class="card-title">داشبورد سازنده</h2><div class="card"><p>سامانه متصل است.</p></div>`;
-            } else if (view === 'inspection') {
-                content.innerHTML = `<h2 class="card-title">بازرسی قطعات</h2><div class="card">در حال توسعه...</div>`;
+                navItems[0].classList.add('active');
+                document.getElementById('content-area').innerHTML = `
+                    <h2 class="card-title">داشبورد سازنده</h2>
+                    <div class="card">
+                        <p>به سامانه یکپارچه مدیریت کیفیت خوش آمدید.</p>
+                        <p style="margin-top:10px; color:#2e7d32; font-weight:bold;">شما به سامانه مادر متصل هستید.</p>
+                    </div>
+                `;
             } else if (view === 'qans') {
-                render8DForm(); // برای تست سریع فرم 8D را لود می‌کنیم
+                navItems[1].classList.add('active');
+                renderSupplierQANs();
             }
         }
 
