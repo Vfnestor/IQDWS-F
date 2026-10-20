@@ -1,0 +1,45 @@
+:root {
+    --primary: #0b3d6b;
+    --primary-light: #1a5a99;
+    --secondary: #2e7d32;
+    --admin: #4a148c;
+    --bg: #f0f3f7;
+    --text: #1a1a1a;
+    --text-muted: #666;
+    --border: #d0d7de;
+    --white: #ffffff;
+    --danger: #c62828;
+    --warning: #ef6c00;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, Arial, sans-serif; }
+body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+/* Layout */
+.app-layout { display: flex; flex-direction: column; height: 100vh; }
+.app-header { background: var(--primary); color: var(--white); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+.header-brand { font-size: 16px; font-weight: bold; }
+.header-user { display: flex; align-items: center; gap: 15px; font-size: 12px; }
+
+.app-body { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 220px; background: var(--white); border-left: 1px solid var(--border); overflow-y: auto; }
+.nav-item { display: block; padding: 12px 20px; color: var(--text); text-decoration: none; cursor: pointer; border-right: 3px solid transparent; font-size: 13px; }
+.nav-item:hover { background: var(--bg); }
+.nav-item.active { background: #e3f2fd; border-right-color: var(--primary); color: var(--primary); font-weight: bold; }
+
+.content { flex: 1; padding: 20px; overflow-y: auto; }
+
+/* Login Page */
+.login-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #0b3d6b, #1a5a99); padding: 15px; }
+.login-card { background: var(--white); border-radius: 12px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.login-title { color: var(--primary); text-align: center; margin-bottom: 5px; }
+.login-subtitle { color: var(--text-muted); text-align: center; font-size: 12px; margin-bottom: 25px; }
+
+/* Responsive (Mobile) */
+@media (max-width: 768px) {
+    .app-body { flex-direction: column; }
+    .sidebar { width: 100%; display: flex; overflow-x: auto; border-left: none; border-bottom: 1px solid var(--border); }
+    .nav-item { padding: 10px 15px; white-space: nowrap; border-right: none; border-bottom: 3px solid transparent; }
+    .nav-item.active { border-bottom-color: var(--primary); background: transparent; }
+    .content { padding: 15px; }
+}
