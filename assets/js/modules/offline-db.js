@@ -1,4 +1,3 @@
-// مدیریت دیتابیس محلی IndexedDB برای صف آفلاین
 const OfflineDB = {
     db: null,
     
@@ -47,5 +46,16 @@ const OfflineDB = {
             request.onsuccess = () => resolve();
             request.onerror = (e) => reject(e);
         });
+    },
+    
+    // دریافت لیست ایرادهای ذخیره شده محلی برای نمایش در لیست
+    getLocalDefects: async function() {
+        const queue = await this.getQueue();
+        return queue.filter(item => item.endpoint === '/defects').map(item => ({
+            ...item.data,
+            id: 'LOCAL-' + item.id, // شناسه موقت برای حالت آفلاین
+            status: 'pending_upload',
+            isLocal: true
+        }));
     }
 };
