@@ -1,9 +1,9 @@
 async function renderMainAnalytics() {
     const content = document.getElementById('content-area');
-    content.innerHTML = `<p>در حال دریافت امتیازات سازندگان از سرور...</p>`;
+    content.innerHTML = `<p>در حال دریافت امتیازات سازندگان از سرور ابری...</p>`;
     
     try {
-        const res = await fetch('http://localhost:3000/api/suppliers', {
+        const res = await fetch(`${API_BASE_URL}/suppliers`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('iqdws_token')}` }
         });
         const suppliers = await res.json();
@@ -22,6 +22,6 @@ async function renderMainAnalytics() {
             </div>
         `;
     } catch(e) {
-        content.innerHTML = `<p style="color:red;">خطا در اتصال به بک‌اند</p>`;
+        content.innerHTML = `<p style="color:red;">خطا در اتصال به بک‌اند ابری</p>`;
     }
 }
