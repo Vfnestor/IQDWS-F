@@ -1,16 +1,13 @@
-/* استایل‌های اختصاصی پنل مدیریت */
+/* استایل اختصاصی پنل مدیریت */
 .admin-header {
-    background-color: #4a148c !important; /* رنگ بنفش تیره */
+    background: linear-gradient(90deg, #4a148c, #6a1b9a) !important;
 }
 
 .admin-sidebar .nav-item.active {
     background: #f3e5f5 !important;
     border-right-color: #4a148c !important;
     color: #4a148c !important;
-}
-
-.admin-sidebar .nav-item:hover {
-    background: #fafafa;
+    font-weight: bold;
 }
 
 .bug-card {
@@ -20,9 +17,15 @@
     padding: 15px;
     margin-bottom: 15px;
     border-left: 4px solid #c62828;
+    transition: 0.3s;
 }
 
 .bug-card.resolved {
     border-left-color: #2e7d32;
-    opacity: 0.8;
+    opacity: 0.7;
+    background: #fafafa;
+}
+
+.bug-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
