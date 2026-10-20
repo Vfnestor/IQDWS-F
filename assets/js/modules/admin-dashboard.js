@@ -1,47 +1,43 @@
 async function renderAdminDashboard() {
     const content = document.getElementById('content-area');
-    content.innerHTML = `<p>در حال دریافت آمار از سرور...</p>`;
+    content.innerHTML = `<p>در حال برقراری ارتباط با هسته سیستم...</p>`;
     
     try {
         const data = await AdminAPI.getStats();
+        const health = await AdminAPI.getSystemHealth();
         
         content.innerHTML = `
-            <h2 class="page-title">آمار کلی اکوسیستم</h2>
+            <h2 class="page-title">داشبورد مدیریت اکوسیستم</h2>
+            
             <div class="kpi-grid">
                 <div class="kpi-card" style="border-right-color: #4a148c;">
-                    <div class="kpi-title">کل ایرادهای ثبت‌شده</div>
+                    <div class="kpi-title">کل ایرادها</div>
                     <div class="kpi-value" style="color: #4a148c;">${data.defects.length}</div>
                 </div>
                 <div class="kpi-card" style="border-right-color: var(--warning);">
-                    <div class="kpi-title">اخطارهای کیفی صادرشده</div>
+                    <div class="kpi-title">اخطارهای کیفی</div>
                     <div class="kpi-value" style="color: var(--warning);">${data.qans.length}</div>
                 </div>
+                <div class="kpi-card" style="border-right-color: var(--danger);">
+                    <div class="kpi-title">باگ‌های باز</div>
+                    <div class="kpi-value" style="color: var(--danger);">${data.bugs.filter(b => b.status === 'open').length}</div>
+                </div>
                 <div class="kpi-card" style="border-right-color: var(--secondary);">
-                    <div class="kpi-title">سیستم‌های متصل</div>
-                    <div class="kpi-value" style="color: var(--secondary);">۲</div>
+                    <div class="kpi-title">وضعیت سرور</div>
+                    <div class="kpi-value" style="color: var(--secondary); font-size: 18px;">${health.status === 'online' ? '✅ آنلاین' : 'قطع'}</div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">آخرین فعالیت‌ها در سامانه مادر</div>
-                <div class="table-wrapper">
-                    <table>
-                        <thead><tr><th>نوع</th><th>شناسه</th><th>عنوان</th><th>وضعیت</th></tr></thead>
-                        <tbody>
-                            ${data.defects.slice(0, 5).map(d => `
-                                <tr>
-                                    <td><span class="badge status-registered">ایراد</span></td>
-                                    <td>${d.id.substring(0,8)}...</td>
-                                    <td>${d.title}</td>
-                                    <td>${d.status}</td>
-                                </tr>
-                            `).join('') || '<tr><td colspan="4" style="text-align:center;">داده‌ای یافت نشد</td></tr>'}
-                        </tbody>
-                    </table>
-                </div>
+                <div class="card-title">اطلاعات فنی سیستم</div>
+                <table>
+                    <tr><td>نسخه نرم‌افزار</td><td>${health.version}</td></tr>
+                    <tr><td>وضعیت دیتابیس</td><td>${health.database}</td></tr>
+                    <tr><td>مدت زمان فعالیت (Uptime)</td><td>${Math.floor(health.uptime)} ثانیه</td></tr>
+                </table>
             </div>
         `;
     } catch (error) {
-        content.innerHTML = `<p style="color:red;">خطا در اتصال به بک‌اند: ${error.message}</p>`;
+        content.innerHTML = `<div class="alert-box" style="background:#ffebee; color:#c62828;">خطا در اتصال به بک‌اند: لطفا سرور را روشن کنید.</div>`;
     }
 }
