@@ -1,4 +1,3 @@
-// اتصال به APIهای بک‌اند
 const AdminAPI = {
     getToken: () => localStorage.getItem('iqdws_token'),
     getHeaders: function() { 
@@ -10,9 +9,9 @@ const AdminAPI = {
     
     getStats: async () => {
         const [resDefects, resQANs, resBugs] = await Promise.all([
-            fetch('http://localhost:3000/api/defects', { headers: AdminAPI.getHeaders() }),
-            fetch('http://localhost:3000/api/qans', { headers: AdminAPI.getHeaders() }),
-            fetch('http://localhost:3000/api/bugs', { headers: AdminAPI.getHeaders() })
+            fetch(`${API_BASE_URL}/defects`, { headers: AdminAPI.getHeaders() }),
+            fetch(`${API_BASE_URL}/qans`, { headers: AdminAPI.getHeaders() }),
+            fetch(`${API_BASE_URL}/bugs`, { headers: AdminAPI.getHeaders() })
         ]);
         return { 
             defects: await resDefects.json(), 
@@ -22,12 +21,12 @@ const AdminAPI = {
     },
 
     getBugs: async () => {
-        const res = await fetch('http://localhost:3000/api/bugs', { headers: AdminAPI.getHeaders() });
+        const res = await fetch(`${API_BASE_URL}/bugs`, { headers: AdminAPI.getHeaders() });
         return await res.json();
     },
 
     createBug: async (title, priority) => {
-        const res = await fetch('http://localhost:3000/api/bugs', {
+        const res = await fetch(`${API_BASE_URL}/bugs`, {
             method: 'POST',
             headers: AdminAPI.getHeaders(),
             body: JSON.stringify({ title, priority })
@@ -36,7 +35,7 @@ const AdminAPI = {
     },
 
     resolveBug: async (id) => {
-        const res = await fetch(`http://localhost:3000/api/bugs/${id}/resolve`, {
+        const res = await fetch(`${API_BASE_URL}/bugs/${id}/resolve`, {
             method: 'PUT',
             headers: AdminAPI.getHeaders()
         });
@@ -44,7 +43,7 @@ const AdminAPI = {
     },
 
     getSystemHealth: async () => {
-        const res = await fetch('http://localhost:3000/api/settings/health', { headers: AdminAPI.getHeaders() });
+        const res = await fetch(`${API_BASE_URL}/settings/health`, { headers: AdminAPI.getHeaders() });
         return await res.json();
     }
 };
