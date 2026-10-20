@@ -21,16 +21,15 @@
         </header>
         <div class="app-body">
             <nav class="sidebar admin-sidebar">
-                <a onclick="navigate('dashboard')" class="nav-item active">📈 آمار کلی</a>
-                <a onclick="navigate('suppliers')" class="nav-item">🏢 مدیریت سازندگان</a>
+                <a onclick="navigate('dashboard')" class="nav-item active">📈 آمار و وضعیت</a>
                 <a onclick="navigate('support')" class="nav-item">🛠️ پشتیبانی و باگ‌ها</a>
-                <a onclick="navigate('settings')" class="nav-item">⚙️ تنظیمات سیستم</a>
+                <a onclick="navigate('settings')" class="nav-item">⚙️ تنظیمات (به‌زودی)</a>
             </nav>
             <main class="content" id="content-area"></main>
         </div>
     </div>
 
-    <!-- ماژول‌های ادمین -->
+    <!-- Modules -->
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/modules/utils.js"></script>
     <script src="assets/js/modules/admin-api.js"></script>
@@ -44,10 +43,19 @@
         function navigate(view) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navItems = document.querySelectorAll('.nav-item');
-            if(view === 'dashboard') { navItems[0].classList.add('active'); renderAdminDashboard(); }
-            if(view === 'suppliers') { navItems[1].classList.add('active'); document.getElementById('content-area').innerHTML = '<h2>مدیریت سازندگان در حال توسعه...</h2>'; }
-            if(view === 'support') { navItems[2].classList.add('active'); renderSupportPanel(); }
-            if(view === 'settings') { navItems[3].classList.add('active'); document.getElementById('content-area').innerHTML = '<h2>تنظیمات در حال توسعه...</h2>'; }
+            
+            if (view === 'dashboard') { 
+                navItems[0].classList.add('active'); 
+                renderAdminDashboard(); 
+            }
+            if (view === 'support') { 
+                navItems[1].classList.add('active'); 
+                renderSupportPanel(); 
+            }
+            if (view === 'settings') { 
+                navItems[2].classList.add('active'); 
+                document.getElementById('content-area').innerHTML = '<div class="card"><h2>تنظیمات اکوسیستم</h2><p>این بخش برای مدیریت دسترسی‌ها و کلیدهای API در فاز بعدی توسعه می‌یابد.</p></div>'; 
+            }
         }
 
         window.onload = () => navigate('dashboard');
