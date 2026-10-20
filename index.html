@@ -43,18 +43,8 @@
         </div>
     </div>
 
-    <!-- اسکریپت‌ها -->
+    <!-- اسکریپت‌ها: ترتیب مهم است! اول config و بعد auth -->
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/auth.js"></script>
-
-    <!-- اسکریپت‌های شما -->
-    <script>
-        // ثبت Service Worker برای PWA (در همه صفحات)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
-        }
-    </script>
-
 </body>
 </html>
