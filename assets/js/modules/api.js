@@ -1,12 +1,9 @@
-const API_BASE_URL = 'http://localhost:3000/api';
-
 const getToken = () => localStorage.getItem('iqdws_token');
 const getHeaders = () => ({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${getToken()}`
 });
 
-// تابع کمکی برای بررسی وضعیت پاسخ
 async function handleResponse(res) {
     if (res.status === 401) {
         alert('نشست شما منقضی شده است. لطفا دوباره وارد شوید.');
