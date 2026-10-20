@@ -41,14 +41,16 @@ async function handleLogin() {
     loginBtn.innerText = 'در حال اتصال به سرور...';
 
     try {
-        // استفاده از API_BASE_URL که در config.js تعریف شده است
-        const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        const targetURL = `${window.API_BASE_URL}/auth/login`;
+        console.log("Connecting to:", targetURL); // برای دیباگ در کنسول
+
+        const res = await fetch(targetURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: roleId, app: selectedApp })
         });
 
-        if (!res.ok) throw new Error('خطا در احراز هویت');
+        if (!res.ok) throw new Error(`سرور پاسخ خطا داد: ${res.status}`);
         
         const data = await res.json();
 
@@ -64,7 +66,8 @@ async function handleLogin() {
         else if (selectedApp === 'admin') window.location.href = 'admin.html';
 
     } catch (error) {
-        alert('خطا در اتصال به سرور ابری. اگر سایت برای اولین بار باز می‌شود، لطفاً ۳۰ ثانیه صبر کنید و دوباره تلاش کنید.');
+        // نمایش دقیق خطا برای فهمیدن مشکل
+        alert('خطای اتصال: ' + error.message + '\n\nمطمئن شوید آدرس بک‌اند در config.js درست است.');
         loginBtn.disabled = false;
         loginBtn.innerText = 'ورود به سامانه';
     }
