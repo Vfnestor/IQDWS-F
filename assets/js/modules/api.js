@@ -12,44 +12,47 @@ async function handleResponse(res) {
         window.location.href = 'index.html';
         throw new Error('Unauthorized');
     }
-    if (!res.ok) throw new Error('خطا در ارتباط با سرور');
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `خطای سرور: ${res.status}`);
+    }
     return await res.json();
 }
 
 const API = {
     getDefects: async () => {
-        const res = await fetch(`${API_BASE_URL}/defects`, { headers: getHeaders() });
+        const res = await fetch(`${window.API_BASE_URL}/defects`, { headers: getHeaders() });
         return handleResponse(res);
     },
     createDefect: async (data) => {
-        const res = await fetch(`${API_BASE_URL}/defects`, {
+        const res = await fetch(`${window.API_BASE_URL}/defects`, {
             method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
         });
         return handleResponse(res);
     },
     getQANs: async () => {
-        const res = await fetch(`${API_BASE_URL}/qans`, { headers: getHeaders() });
+        const res = await fetch(`${window.API_BASE_URL}/qans`, { headers: getHeaders() });
         return handleResponse(res);
     },
     createQAN: async (data) => {
-        const res = await fetch(`${API_BASE_URL}/qans`, {
+        const res = await fetch(`${window.API_BASE_URL}/qans`, {
             method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
         });
         return handleResponse(res);
     },
     updateQANStatus: async (id, status) => {
-        const res = await fetch(`${API_BASE_URL}/qans/${id}/status`, {
+        const res = await fetch(`${window.API_BASE_URL}/qans/${id}/status`, {
             method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status })
         });
         return handleResponse(res);
     },
     get8DByQAN: async (qanId) => {
-        const res = await fetch(`${API_BASE_URL}/eightd/qan/${qanId}`, { headers: getHeaders() });
+        const res = await fetch(`${window.API_BASE_URL}/eightd/qan/${qanId}`, { headers: getHeaders() });
         if (res.status === 404) return null;
         return handleResponse(res);
     },
     save8D: async (data) => {
-        const res = await fetch(`${API_BASE_URL}/eightd`, {
+        const res = await fetch(`${window.API_BASE_URL}/eightd`, {
             method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
         });
         return handleResponse(res);
