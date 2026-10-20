@@ -1,4 +1,4 @@
-const CACHE_NAME = 'iqdws-cache-v2'; // تغییر نسخه به 2
+const CACHE_NAME = 'iqdws-cache-v3'; // تغییر نسخه برای دور زدن کش
 const urlsToCache = [
   './index.html',
   './main.html',
@@ -8,12 +8,12 @@ const urlsToCache = [
   './assets/css/components.css',
   './assets/css/forms.css',
   './assets/css/tables.css',
-  './assets/js/config.js', // اضافه شدن فایل تنظیمات
+  './assets/js/config.js',
   './assets/js/auth.js'
 ];
 
 self.addEventListener('install', event => {
-  // پاک کردن کش‌های قدیمی هنگام نصب نسخه جدید
+  // پاک کردن کش‌های قبلی
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -28,14 +28,20 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
+self.addEventListener('activate', event => {
+  event.waitUntil(clients.claim()); // اعمال فوری تغییرات
+});
+
 self.addEventListener('fetch', event => {
+  // برای درخواست‌های API، همیشه از شبکه بخوان
   if (event.request.url.includes('/api/')) {
-    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
-  } else {
-    event.respondWith(
-      caches.match(event.request).then(response => {
-        return response || fetch(event.request);
-      })
-    );
+    event.preventDefault();
+    return;
   }
+  
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
+  );
 });
