@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/tables.css">
+    <link rel="stylesheet" href="assets/css/analytics.css">
 </head>
 <body>
     <div id="app" class="app-layout">
@@ -22,6 +23,7 @@
             <nav class="sidebar">
                 <a onclick="navigate('dashboard')" class="nav-item active">📊 داشبورد</a>
                 <a onclick="navigate('qans')" class="nav-item">⚠️ اخطارهای دریافتی</a>
+                <a onclick="navigate('performance')" class="nav-item">📈 کارنامه کیفیت</a>
             </nav>
             <main class="content" id="content-area"></main>
         </div>
@@ -31,6 +33,7 @@
     <script src="assets/js/modules/utils.js"></script>
     <script src="assets/js/modules/api.js"></script>
     <script src="assets/js/modules/8d.js"></script>
+    <script src="assets/js/modules/supplier-performance.js"></script>
 
     <script>
         const session = checkAuth('supplier');
@@ -52,6 +55,9 @@
             } else if (view === 'qans') {
                 navItems[1].classList.add('active');
                 renderSupplierQANs();
+            } else if (view === 'performance') {
+                navItems[2].classList.add('active');
+                renderSupplierPerformance();
             }
         }
 
