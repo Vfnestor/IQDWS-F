@@ -8,70 +8,69 @@
     <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/tables.css">
-    <link rel="stylesheet" href="assets/css/analytics.css">
 </head>
 <body>
     <div id="app" class="app-layout">
         <header class="app-header" style="background-color: #2e7d32;">
-            <div class="header-brand">🔧 سامانه سازنده (Sazandeh)</div>
+            <div class="header-brand">
+                <button class="menu-btn" onclick="toggleMenu()">☰</button>
+                🔧 سامانه سازنده (Sazandeh)
+            </div>
             <div class="header-user">
-                <span id="user-name">نقش کاربر</span>
+                <span id="user-info" style="font-weight:bold; font-size:13px;"></span>
                 <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </header>
         <div class="app-body">
-            <nav class="sidebar">
-                <a onclick="navigate('dashboard')" class="nav-item active">📊 داشبورد</a>
-                <a onclick="navigate('qans')" class="nav-item">⚠️ اخطارهای دریافتی</a>
-                <a onclick="navigate('performance')" class="nav-item">📈 کارنامه کیفیت</a>
+            <div class="sidebar-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+            <nav class="sidebar" id="main-sidebar">
+                <div class="sidebar-header">
+                    <span>منوی اصلی</span>
+                    <button class="close-btn" onclick="toggleMenu()">✖</button>
+                </div>
+                <div id="nav-items-container"></div>
             </nav>
             <main class="content" id="content-area"></main>
         </div>
     </div>
 
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/modules/utils.js"></script>
-    <script src="assets/js/modules/api.js"></script>
+    <script src="assets/js/modules/offline-db.js"></script>
     <script src="assets/js/modules/8d.js"></script>
-    <script src="assets/js/modules/supplier-performance.js"></script>
 
     <script>
         const session = checkAuth('supplier');
-        if (session) document.getElementById('user-name').innerText = session.roleName;
+        if (session) {
+            document.getElementById('user-info').innerText = `${session.firstName} ${session.lastName} (${session.roleName})`;
+        }
+
+        function toggleMenu() {
+            document.getElementById('main-sidebar').classList.toggle('active');
+            document.getElementById('menu-overlay').classList.toggle('active');
+        }
 
         function navigate(view) {
+            if(window.innerWidth < 768) toggleMenu();
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navItems = document.querySelectorAll('.nav-item');
-            
+            const activeNav = document.getElementById(`nav-${view}`);
+            if(activeNav) activeNav.classList.add('active');
+
             if (view === 'dashboard') {
-                navItems[0].classList.add('active');
-                document.getElementById('content-area').innerHTML = `
-                    <h2 class="card-title">داشبورد سازنده</h2>
-                    <div class="card">
-                        <p>به سامانه یکپارچه مدیریت کیفیت خوش آمدید.</p>
-                        <p style="margin-top:10px; color:#2e7d32; font-weight:bold;">شما به سامانه مادر متصل هستید.</p>
-                    </div>
-                `;
+                document.getElementById('content-area').innerHTML = `<h2 class="card-title">داشبورد سازنده</h2><div class="card"><p>شما به سامانه مادر متصل هستید.</p></div>`;
             } else if (view === 'qans') {
-                navItems[1].classList.add('active');
                 renderSupplierQANs();
-            } else if (view === 'performance') {
-                navItems[2].classList.add('active');
-                renderSupplierPerformance();
             }
         }
 
-        window.onload = () => navigate('dashboard');
-    </script>
-
-    <!-- اسکریپت‌های شما -->
-    <script>
-        // ثبت Service Worker برای PWA (در همه صفحات)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
-        }
+        window.onload = () => {
+            document.getElementById('nav-items-container').innerHTML = `
+                <a onclick="navigate('dashboard')" class="nav-item" id="nav-dashboard"><span>📊</span> داشبورد</a>
+                <a onclick="navigate('qans')" class="nav-item" id="nav-qans"><span>⚠️</span> اخطارهای دریافتی</a>
+            `;
+            navigate('dashboard');
+        };
     </script>
 </body>
 </html>
