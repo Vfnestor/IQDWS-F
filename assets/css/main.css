@@ -15,31 +15,42 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, Arial, sans-serif; }
 body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
 
-/* Layout */
-.app-layout { display: flex; flex-direction: column; height: 100vh; }
-.app-header { background: var(--primary); color: var(--white); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-.header-brand { font-size: 16px; font-weight: bold; }
+/* Layout & Header */
+.app-layout { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.app-header { background: var(--primary); color: var(--white); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; }
+.header-brand { font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
 .header-user { display: flex; align-items: center; gap: 15px; font-size: 12px; }
 
-.app-body { display: flex; flex: 1; overflow: hidden; }
-.sidebar { width: 220px; background: var(--white); border-left: 1px solid var(--border); overflow-y: auto; }
-.nav-item { display: block; padding: 12px 20px; color: var(--text); text-decoration: none; cursor: pointer; border-right: 3px solid transparent; font-size: 13px; }
+/* Hamburger Menu Button */
+.menu-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; display: block; }
+@media (min-width: 768px) { .menu-btn { display: none; } }
+
+/* Sidebar (Hamburger) */
+.sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; }
+.sidebar-overlay.active { display: block; }
+
+.sidebar { position: fixed; top: 0; right: -250px; width: 250px; height: 100vh; background: var(--white); z-index: 201; transition: right 0.3s ease; box-shadow: -2px 0 5px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+.sidebar.active { right: 0; }
+.sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--primary); }
+.close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
+
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 15px 20px; color: var(--text); text-decoration: none; cursor: pointer; border-right: 4px solid transparent; font-size: 14px; }
 .nav-item:hover { background: var(--bg); }
 .nav-item.active { background: #e3f2fd; border-right-color: var(--primary); color: var(--primary); font-weight: bold; }
 
-.content { flex: 1; padding: 20px; overflow-y: auto; }
+/* Desktop Sidebar adjustment */
+@media (min-width: 768px) {
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { position: static; width: 250px; right: 0; box-shadow: none; border-left: 1px solid var(--border); }
+    .sidebar-header { display: none; }
+    .content { flex: 1; padding: 20px; overflow-y: auto; }
+}
+@media (max-width: 767px) {
+    .content { flex: 1; padding: 15px; overflow-y: auto; }
+}
 
 /* Login Page */
 .login-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #0b3d6b, #1a5a99); padding: 15px; }
 .login-card { background: var(--white); border-radius: 12px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 .login-title { color: var(--primary); text-align: center; margin-bottom: 5px; }
 .login-subtitle { color: var(--text-muted); text-align: center; font-size: 12px; margin-bottom: 25px; }
-
-/* Responsive (Mobile) */
-@media (max-width: 768px) {
-    .app-body { flex-direction: column; }
-    .sidebar { width: 100%; display: flex; overflow-x: auto; border-left: none; border-bottom: 1px solid var(--border); }
-    .nav-item { padding: 10px 15px; white-space: nowrap; border-right: none; border-bottom: 3px solid transparent; }
-    .nav-item.active { border-bottom-color: var(--primary); background: transparent; }
-    .content { padding: 15px; }
-}
