@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت | IQDWS</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+    <div id="app" class="app-layout">
+        <header class="app-header" style="background-color: #4a148c;">
+            <div class="header-brand">⚙️ پنل مدیریت اکوسیستم و پشتیبانی</div>
+            <div class="header-user">
+                <span id="user-name">نقش کاربر</span>
+                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
+            </div>
+        </header>
+        <div class="app-body">
+            <nav class="sidebar">
+                <a onclick="navigate('dashboard')" class="nav-item active">📈 آمار کلی</a>
+                <a onclick="navigate('suppliers')" class="nav-item">🏢 مدیریت سازندگان</a>
+                <a onclick="navigate('support')" class="nav-item">🛠️ پشتیبانی و باگ‌ها</a>
+                <a onclick="navigate('settings')" class="nav-item">⚙️ تنظیمات سیستم</a>
+            </nav>
+            <main class="content" id="content-area">
+                <div class="card">
+                    <h2>پنل مدیریت در حال ساخت است...</h2>
+                    <p>این بخش برای رفع باگ‌ها، مدیریت دسترسی‌ها و نظارت بر اکوسیستم در فاز بعدی تکمیل خواهد شد.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="assets/js/store.js"></script>
+    <script src="assets/js/auth.js"></script>
+</body>
+</html>
