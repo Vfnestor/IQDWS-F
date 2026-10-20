@@ -48,7 +48,7 @@
     <script>
         const session = checkAuth('admin');
         if (session) {
-            document.getElementById('user-info').innerText = `${session.firstName} ${session.lastName} (${session.roleName})`;
+            document.getElementById('user-info').innerText = `${session.displayName} (${session.roleName})`;
         }
 
         function toggleMenu() {
@@ -61,6 +61,12 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${view}`);
             if(activeNav) activeNav.classList.add('active');
+
+            // ریست کردن وضعیت صفحه کاربران هنگام ورود
+            if (view === 'users') {
+                adminUserView = 'list';
+                currentSearchFilter = { role: '', username: '', defectCode: '' };
+            }
 
             if (view === 'dashboard') renderAdminDashboard();
             else if (view === 'users') renderUserManagement();
