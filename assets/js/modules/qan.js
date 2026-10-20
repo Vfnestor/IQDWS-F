@@ -1,23 +1,35 @@
-function renderQANList() {
+async function renderQANList() {
     const content = document.getElementById('content-area');
-    const qans = API.getQANs();
+    content.innerHTML = `<p>در حال دریافت اخطارها...</p>`;
+    
+    const qans = await API.getQANs();
+    const role = JSON.parse(localStorage.getItem('iqdws_session')).roleId;
     
     content.innerHTML = `
         <div class="card">
-            <h2 class="card-title">اخطارهای کیفی صادر شده</h2>
+            <h2 class="card-title">اخطارهای کیفی</h2>
             <div class="table-wrapper">
                 <table>
                     <thead><tr><th>شناسه</th><th>عنوان</th><th>سطح</th><th>وضعیت</th><th>عملیات</th></tr></thead>
                     <tbody>
                         ${qans.map(q => `
                             <tr>
-                                <td>${q.id}</td>
+                                <td>${q.id.substring(0,8)}...</td>
                                 <td>${q.title}</td>
                                 <td>${q.level}</td>
                                 <td><span class="badge status-qan">${q.status}</span></td>
-                                <td><button class="btn btn-sm btn-primary" onclick="approveQAN('${q.id}')">تأیید (تست)</button></td>
+                                <td>
+                                    ${q.status === 'pending_dept' && role === 'dept_head' 
+                                        ? `<button class="btn btn-sm btn-success" onclick="approveQAN('${q.id}', 'pending_office')">تأیید (مسول بخش)</button>` : ''}
+                                    
+                                    ${q.status === 'pending_office' && role === 'office_head' 
+                                        ? `<button class="btn btn-sm btn-success" onclick="approveQAN('${q.id}', 'sent')">تأیید نهایی (رئیس اداره)</button>` : ''}
+                                    
+                                    ${q.status === 'responded' 
+                                        ? `<span style="color:green;">پاسخ ۸D دریافت شد</span>` : ''}
+                                </td>
                             </tr>
-                        `).join('') || '<tr><td colspan="5" style="text-align:center;">اخطاری ثبت نشده است</td></tr>'}
+                        `).join('')}
                     </tbody>
                 </table>
             </div>
@@ -25,13 +37,8 @@ function renderQANList() {
     `;
 }
 
-function approveQAN(qanId) {
-    let qans = API.getQANs();
-    let q = qans.find(x => x.id === qanId);
-    if(q) {
-        q.status = 'sent';
-        localStorage.setItem('iqdws_qans', JSON.stringify(qans));
-        Utils.toast('اخطار تأیید و به سازنده ارسال شد');
-        renderQANList();
-    }
+async function approveQAN(qanId, nextStatus) {
+    await API.updateQANStatus(qanId, nextStatus);
+    Utils.toast('وضعیت اخطار به‌روزرسانی شد');
+    renderQANList();
 }
