@@ -20,15 +20,6 @@ async function handleResponse(res) {
 }
 
 const API = {
-    getDefects: async () => {
-        try {
-            const res = await fetch(`${window.API_BASE_URL}/defects`, { headers: getHeaders() });
-            return handleResponse(res);
-        } catch (e) {
-            if(e.message === 'Failed to fetch') throw new Error('عدم برقراری ارتباط با سرور (سرور خواب است یا اینترنت شما قطع شده)');
-            throw e;
-        }
-    },
     createDefect: async (data) => {
         try {
             const res = await fetch(`${window.API_BASE_URL}/defects`, {
@@ -36,7 +27,19 @@ const API = {
             });
             return handleResponse(res);
         } catch (e) {
-            if(e.message === 'Failed to fetch') throw new Error('عدم برقراری ارتباط با سرور (CORS یا قطعی اینترنت)');
+            if (e.message.includes('Failed to fetch')) {
+                throw new Error('سرور Render در حال بیدار شدن است یا اینترنت شما قطع است. لطفاً ۴۰ ثانیه صبر کنید و مجدداً تلاش کنید.');
+            }
+            throw e;
+        }
+    },
+    // ... (بقیه توابع قبلی بدون تغییر)
+    getDefects: async () => {
+        try {
+            const res = await fetch(`${window.API_BASE_URL}/defects`, { headers: getHeaders() });
+            return handleResponse(res);
+        } catch (e) {
+            if (e.message.includes('Failed to fetch')) throw new Error('عدم برقراری ارتباط با سرور (در حال بیدار شدن است)');
             throw e;
         }
     },
@@ -45,7 +48,7 @@ const API = {
             const res = await fetch(`${window.API_BASE_URL}/qans`, { headers: getHeaders() });
             return handleResponse(res);
         } catch (e) {
-            if(e.message === 'Failed to fetch') throw new Error('عدم برقراری ارتباط با سرور');
+            if (e.message.includes('Failed to fetch')) throw new Error('عدم برقراری ارتباط با سرور');
             throw e;
         }
     },
