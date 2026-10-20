@@ -6,49 +6,55 @@ const getHeaders = () => ({
     'Authorization': `Bearer ${getToken()}`
 });
 
+// تابع کمکی برای بررسی وضعیت پاسخ
+async function handleResponse(res) {
+    if (res.status === 401) {
+        alert('نشست شما منقضی شده است. لطفا دوباره وارد شوید.');
+        localStorage.removeItem('iqdws_token');
+        localStorage.removeItem('iqdws_session');
+        window.location.href = 'index.html';
+        throw new Error('Unauthorized');
+    }
+    if (!res.ok) throw new Error('خطا در ارتباط با سرور');
+    return await res.json();
+}
+
 const API = {
-    // --- ایرادها ---
     getDefects: async () => {
         const res = await fetch(`${API_BASE_URL}/defects`, { headers: getHeaders() });
-        if (!res.ok) throw new Error('خطا در دریافت ایرادها');
-        return await res.json();
+        return handleResponse(res);
     },
     createDefect: async (data) => {
         const res = await fetch(`${API_BASE_URL}/defects`, {
             method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
         });
-        return await res.json();
+        return handleResponse(res);
     },
-
-    // --- اخطارها ---
     getQANs: async () => {
         const res = await fetch(`${API_BASE_URL}/qans`, { headers: getHeaders() });
-        if (!res.ok) throw new Error('خطا در دریافت اخطارها');
-        return await res.json();
+        return handleResponse(res);
     },
     createQAN: async (data) => {
         const res = await fetch(`${API_BASE_URL}/qans`, {
             method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
         });
-        return await res.json();
+        return handleResponse(res);
     },
     updateQANStatus: async (id, status) => {
         const res = await fetch(`${API_BASE_URL}/qans/${id}/status`, {
             method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status })
         });
-        return await res.json();
+        return handleResponse(res);
     },
-
-    // --- 8D ---
     get8DByQAN: async (qanId) => {
         const res = await fetch(`${API_BASE_URL}/eightd/qan/${qanId}`, { headers: getHeaders() });
-        if (!res.ok) return null; // یعنی هنوز پاسخی ثبت نشده
-        return await res.json();
+        if (res.status === 404) return null;
+        return handleResponse(res);
     },
     save8D: async (data) => {
         const res = await fetch(`${API_BASE_URL}/eightd`, {
             method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
         });
-        return await res.json();
+        return handleResponse(res);
     }
 };
