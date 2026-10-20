@@ -17,28 +17,39 @@
 <body>
     <div id="app" class="app-layout">
         <header class="app-header">
-            <div class="header-brand">🏭 سامانه مادر IQDWS</div>
+            <div class="header-brand">
+                <button class="menu-btn" onclick="toggleMenu()">☰</button>
+                🏭 سامانه مادر IQDWS
+            </div>
             <div class="header-user">
-                <!-- دکمه آپلود به سرور -->
                 <button id="sync-btn" class="btn btn-sm" style="background:#2e7d32; color:white; margin-left:15px;" onclick="SyncManager.processQueue()">
-                    ☁️ آپلود به سرور
+                    ☁️ آپلود
                 </button>
                 <span id="user-name">نقش کاربر</span>
                 <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </header>
+        
         <div class="app-body">
-            <nav class="sidebar">
-                <a onclick="navigate('dashboard')" class="nav-item active">📊 داشبورد</a>
-                <a onclick="navigate('new-defect')" class="nav-item">➕ ثبت ایراد</a>
-                <a onclick="navigate('defects')" class="nav-item">📋 لیست ایرادها</a>
-                <a onclick="navigate('qans')" class="nav-item">⚠️ اخطارهای کیفی</a>
-                <a onclick="navigate('analytics')" class="nav-item">🏢 عملکرد سازندگان</a>
+            <!-- Overlay for mobile menu -->
+            <div class="sidebar-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+            
+            <!-- Hamburger Menu -->
+            <nav class="sidebar" id="main-sidebar">
+                <div class="sidebar-header">
+                    <span>منوی اصلی</span>
+                    <button class="close-btn" onclick="toggleMenu()">✖</button>
+                </div>
+                <div id="nav-items-container">
+                    <!-- منو توسط جاوااسکریپت پر می‌شود -->
+                </div>
             </nav>
+            
             <main class="content" id="content-area"></main>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/modules/utils.js"></script>
@@ -50,33 +61,79 @@
     <script src="assets/js/modules/defect.js"></script>
     <script src="assets/js/modules/qan.js"></script>
     <script src="assets/js/modules/main-analytics.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
+            window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
         }
 
         SyncManager.init();
-
         const session = checkAuth('main');
         if (session) document.getElementById('user-name').innerText = session.roleName;
 
-        function navigate(view) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            if(view === 'dashboard') { navItems[0].classList.add('active'); renderDashboard(); }
-            if(view === 'new-defect') { navItems[1].classList.add('active'); renderNewDefectForm(); }
-            if(view === 'defects') { navItems[2].classList.add('active'); renderDefectList(); }
-            if(view === 'qans') { navItems[3].classList.add('active'); renderQANList(); }
-            if(view === 'analytics') { navItems[4].classList.add('active'); renderMainAnalytics(); }
+        // تنظیمات منو بر اساس نقش
+        function buildMenu() {
+            let menu = [];
+            if (session.roleId === 'inspector') {
+                menu = [
+                    { id: 'dashboard', title: 'داشبورد', icon: '📊' },
+                    { id: 'new-defect', title: 'ثبت ایراد', icon: '➕' },
+                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' }
+                ];
+            } else if (session.roleId === 'expert') {
+                menu = [
+                    { id: 'dashboard', title: 'داشبورد', icon: '📊' },
+                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' },
+                    { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }
+                ];
+            } else if (session.roleId === 'dept_head' || session.roleId === 'office_head') {
+                menu = [
+                    { id: 'dashboard', title: 'داشبورد', icon: '📊' },
+                    { id: 'qans', title: 'تاییدیه اخطارها', icon: '✅' }
+                ];
+            } else {
+                menu = [
+                    { id: 'dashboard', title: 'داشبورد', icon: '📊' },
+                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' },
+                    { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' },
+                    { id: 'analytics', title: 'عملکرد سازندگان', icon: '🏢' }
+                ];
+            }
+
+            const container = document.getElementById('nav-items-container');
+            container.innerHTML = menu.map(item => `
+                <a onclick="navigate('${item.id}')" class="nav-item" id="nav-${item.id}">
+                    <span>${item.icon}</span> ${item.title}
+                </a>
+            `).join('');
         }
 
-        window.onload = () => navigate('dashboard');
+        function toggleMenu() {
+            document.getElementById('main-sidebar').classList.toggle('active');
+            document.getElementById('menu-overlay').classList.toggle('active');
+        }
+
+        function navigate(view) {
+            // بستن منو در حالت موبایل
+            if(window.innerWidth < 768) toggleMenu();
+
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeNav = document.getElementById(`nav-${view}`);
+            if(activeNav) activeNav.classList.add('active');
+            
+            if(view === 'dashboard') renderDashboard();
+            else if(view === 'new-defect') renderNewDefectForm();
+            else if(view === 'defects') renderDefectList();
+            else if(view === 'qans') renderQANList();
+            else if(view === 'analytics') renderMainAnalytics();
+            else if(view === 'defect-detail') renderDefectDetail(state.currentParam);
+        }
+
+        window.onload = () => {
+            buildMenu();
+            navigate('dashboard');
+        };
     </script>
 </body>
 </html>
