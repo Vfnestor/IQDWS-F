@@ -3,7 +3,8 @@ async function renderQANList() {
     content.innerHTML = `<p>در حال دریافت اخطارها...</p>`;
     
     const qans = await API.getQANs();
-    const role = JSON.parse(localStorage.getItem('iqdws_session')).roleId;
+    const session = JSON.parse(localStorage.getItem('iqdws_session'));
+    const role = session.roleId;
     
     content.innerHTML = `
         <div class="card">
@@ -25,8 +26,11 @@ async function renderQANList() {
                                     ${q.status === 'pending_office' && role === 'office_head' 
                                         ? `<button class="btn btn-sm btn-success" onclick="approveQAN('${q.id}', 'sent')">تأیید نهایی (رئیس اداره)</button>` : ''}
                                     
-                                    ${q.status === 'responded' 
-                                        ? `<span style="color:green;">پاسخ ۸D دریافت شد</span>` : ''}
+                                    ${q.status === 'responded' && role === 'expert' 
+                                        ? `<button class="btn btn-sm btn-primary" onclick="approveQAN('${q.id}', 'closed')">تایید 8D و بستن اخطار</button>` : ''}
+                                        
+                                    ${q.status === 'responded' && role !== 'expert' 
+                                        ? `<span style="color:green; font-size:11px;">پاسخ ۸D دریافت شد (در انتظار کارشناس)</span>` : ''}
                                 </td>
                             </tr>
                         `).join('')}
