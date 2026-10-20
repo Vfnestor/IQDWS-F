@@ -32,7 +32,6 @@ function selectApp(appName) {
     document.getElementById('login-btn').disabled = false;
 }
 
-// اصلاح حیاتی: این تابع باید به صورت async باشد و به بک‌اند وصل شود
 async function handleLogin() {
     const roleId = document.getElementById('role-select').value;
     const roleName = roles[selectedApp].find(r => r.id === roleId).name;
@@ -42,8 +41,8 @@ async function handleLogin() {
     loginBtn.innerText = 'در حال اتصال به سرور...';
 
     try {
-        // درخواست به بک‌اند برای گرفتن توکن
-        const res = await fetch('http://localhost:3000/api/auth/login', {
+        // استفاده از API_BASE_URL که در config.js تعریف شده است
+        const res = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: roleId, app: selectedApp })
@@ -53,7 +52,6 @@ async function handleLogin() {
         
         const data = await res.json();
 
-        // ذخیره توکن واقعی و سشن
         localStorage.setItem('iqdws_token', data.token);
         localStorage.setItem('iqdws_session', JSON.stringify({
             app: selectedApp,
@@ -61,13 +59,12 @@ async function handleLogin() {
             roleName: roleName
         }));
         
-        // هدایت به صفحه مربوطه
         if (selectedApp === 'main') window.location.href = 'main.html';
         else if (selectedApp === 'supplier') window.location.href = 'supplier.html';
         else if (selectedApp === 'admin') window.location.href = 'admin.html';
 
     } catch (error) {
-        alert('خطا در اتصال به سرور. لطفا مطمئن شوید بک‌اند (npm run dev) روشن است.');
+        alert('خطا در اتصال به سرور ابری. اگر سایت برای اولین بار باز می‌شود، لطفاً ۳۰ ثانیه صبر کنید و دوباره تلاش کنید.');
         loginBtn.disabled = false;
         loginBtn.innerText = 'ورود به سامانه';
     }
@@ -77,7 +74,6 @@ function checkAuth(expectedApp) {
     const sessionStr = localStorage.getItem('iqdws_session');
     const token = localStorage.getItem('iqdws_token');
     
-    // اگر سشن یا توکن نبود، برگرد به صفحه ورود
     if (!sessionStr || !token) {
         window.location.href = 'index.html';
         return null;
