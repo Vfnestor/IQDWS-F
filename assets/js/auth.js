@@ -2,6 +2,8 @@ const roles = {
     main: [
         { id: 'inspector', name: 'بازرس خط' },
         { id: 'expert', name: 'کارشناس قطعه' },
+        { id: 'dept_head', name: 'مسول بخش' },
+        { id: 'office_head', name: 'رئیس اداره' },
         { id: 'manager', name: 'مدیر کیفیت (ناظر)' }
     ],
     supplier: [
@@ -25,6 +27,7 @@ function selectApp(appName) {
     const roleSelect = document.getElementById('role-select');
     
     roleContainer.style.display = 'block';
+    // اصلاح باگ: استفاده از تگ option برای ساخت صحیح لیست کشویی
     roleSelect.innerHTML = roles[appName].map(r => `<option value="${r.id}">${r.name}</option>`).join('');
     
     document.getElementById('login-btn').disabled = false;
@@ -34,6 +37,7 @@ function handleLogin() {
     const roleId = document.getElementById('role-select').value;
     const roleName = roles[selectedApp].find(r => r.id === roleId).name;
     
+    // ذخیره سشن (برای نسخه اولیه از توکن ساده استفاده می‌کنیم)
     localStorage.setItem('iqdws_session', JSON.stringify({
         app: selectedApp,
         roleId: roleId,
@@ -46,8 +50,13 @@ function handleLogin() {
 }
 
 function checkAuth(expectedApp) {
-    const session = JSON.parse(localStorage.getItem('iqdws_session'));
-    if (!session || session.app !== expectedApp) {
+    const sessionStr = localStorage.getItem('iqdws_session');
+    if (!sessionStr) {
+        window.location.href = 'index.html';
+        return null;
+    }
+    const session = JSON.parse(sessionStr);
+    if (session.app !== expectedApp) {
         window.location.href = 'index.html';
         return null;
     }
