@@ -45,5 +45,16 @@
 
     <!-- اسکریپت‌ها -->
     <script src="assets/js/auth.js"></script>
+
+    <!-- اسکریپت‌های شما -->
+    <script>
+        // ثبت Service Worker برای PWA (در همه صفحات)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
+    </script>
+
 </body>
 </html>
