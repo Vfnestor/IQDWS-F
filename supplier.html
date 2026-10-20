@@ -28,7 +28,9 @@
                     <span>منوی اصلی</span>
                     <button class="close-btn" onclick="toggleMenu()">✖</button>
                 </div>
-                <div id="nav-items-container"></div>
+                <a onclick="navigate('dashboard')" class="nav-item" id="nav-dashboard">📊 داشبورد</a>
+                <a onclick="navigate('qans')" class="nav-item" id="nav-qans">⚠️ اخطارهای دریافتی</a>
+                <a onclick="navigate('change-pass')" class="nav-item" id="nav-change-pass">🔑 تغییر رمز عبور</a>
             </nav>
             <main class="content" id="content-area"></main>
         </div>
@@ -41,9 +43,9 @@
     <script src="assets/js/modules/8d.js"></script>
 
     <script>
-        const session = checkAuth('supplier');
+        const session = checkAuth();
         if (session) {
-            document.getElementById('user-info').innerText = `${session.firstName} ${session.lastName} (${session.roleName})`;
+            document.getElementById('user-info').innerText = `${session.displayName} (${session.roleName})`;
         }
 
         function toggleMenu() {
@@ -57,20 +59,46 @@
             const activeNav = document.getElementById(`nav-${view}`);
             if(activeNav) activeNav.classList.add('active');
 
+            const content = document.getElementById('content-area');
+
             if (view === 'dashboard') {
-                document.getElementById('content-area').innerHTML = `<h2 class="card-title">داشبورد سازنده</h2><div class="card"><p>شما به سامانه مادر متصل هستید.</p></div>`;
+                content.innerHTML = `<h2 class="card-title">داشبورد سازنده</h2><div class="card"><p>به سامانه خوش آمدید <b>${session.displayName}</b>.</p></div>`;
             } else if (view === 'qans') {
                 renderSupplierQANs();
+            } else if (view === 'change-pass') {
+                content.innerHTML = `
+                    <div class="card" style="max-width:500px; margin:0 auto;">
+                        <h2 class="card-title">تغییر رمز عبور</h2>
+                        <form onsubmit="changePassword(event)">
+                            <div class="form-field"><label>رمز عبور فعلی</label><input type="password" id="old_pass" class="form-control" required></div>
+                            <div class="form-field"><label>رمز عبور جدید</label><input type="password" id="new_pass" class="form-control" required></div>
+                            <button type="submit" class="btn btn-success" style="width:100%; margin-top:15px;">ذخیره رمز جدید</button>
+                        </form>
+                    </div>
+                `;
             }
         }
 
-        window.onload = () => {
-            document.getElementById('nav-items-container').innerHTML = `
-                <a onclick="navigate('dashboard')" class="nav-item" id="nav-dashboard"><span>📊</span> داشبورد</a>
-                <a onclick="navigate('qans')" class="nav-item" id="nav-qans"><span>⚠️</span> اخطارهای دریافتی</a>
-            `;
-            navigate('dashboard');
-        };
+        function changePassword(e) {
+            e.preventDefault();
+            const oldPass = document.getElementById('old_pass').value;
+            const newPass = document.getElementById('new_pass').value;
+
+            let users = JSON.parse(localStorage.getItem('iqdws_users'));
+            const userIndex = users.findIndex(u => u.username === session.username);
+
+            if (users[userIndex].password !== oldPass) {
+                return alert('رمز عبور فعلی اشتباه است.');
+            }
+
+            users[userIndex].password = newPass;
+            localStorage.setItem('iqdws_users', JSON.stringify(users));
+            Utils.toast('رمز عبور با موفقیت تغییر کرد');
+            document.getElementById('old_pass').value = '';
+            document.getElementById('new_pass').value = '';
+        }
+
+        window.onload = () => navigate('dashboard');
     </script>
 </body>
 </html>
