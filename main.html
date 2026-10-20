@@ -23,6 +23,7 @@
             <nav class="sidebar">
                 <a onclick="navigate('dashboard')" class="nav-item active">📊 داشبورد</a>
                 <a onclick="navigate('new-defect')" class="nav-item">➕ ثبت ایراد</a>
+                <a onclick="navigate('defects')" class="nav-item">📋 لیست ایرادها</a>
                 <a onclick="navigate('qans')" class="nav-item">⚠️ اخطارهای کیفی</a>
                 <a onclick="navigate('analytics')" class="nav-item">🏢 عملکرد سازندگان</a>
             </nav>
@@ -45,10 +46,12 @@
         function navigate(view) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navItems = document.querySelectorAll('.nav-item');
+            
             if(view === 'dashboard') { navItems[0].classList.add('active'); renderDashboard(); }
             if(view === 'new-defect') { navItems[1].classList.add('active'); renderNewDefectForm(); }
-            if(view === 'qans') { navItems[2].classList.add('active'); renderQANList(); }
-            if(view === 'analytics') { navItems[3].classList.add('active'); renderMainAnalytics(); }
+            if(view === 'defects') { navItems[2].classList.add('active'); renderDefectList(); }
+            if(view === 'qans') { navItems[3].classList.add('active'); renderQANList(); }
+            if(view === 'analytics') { navItems[4].classList.add('active'); renderMainAnalytics(); }
         }
 
         window.onload = () => navigate('dashboard');
