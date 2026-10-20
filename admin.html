@@ -13,63 +13,61 @@
 <body>
     <div id="app" class="app-layout">
         <header class="app-header admin-header">
-            <div class="header-brand">⚙️ پنل مدیریت اکوسیستم</div>
+            <div class="header-brand">
+                <button class="menu-btn" onclick="toggleMenu()">☰</button>
+                ⚙️ پنل مدیریت اکوسیستم
+            </div>
             <div class="header-user">
-                <span id="user-name">مدیر سیستم</span>
+                <span id="user-info" style="font-weight:bold; font-size:13px;"></span>
                 <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </header>
         <div class="app-body">
-            <nav class="sidebar admin-sidebar">
-                <a onclick="navigate('dashboard')" class="nav-item active">📈 آمار و وضعیت</a>
-                <a onclick="navigate('support')" class="nav-item">🛠️ پشتیبانی و باگ‌ها</a>
-                <a onclick="navigate('settings')" class="nav-item">⚙️ تنظیمات (به‌زودی)</a>
+            <div class="sidebar-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+            <nav class="sidebar admin-sidebar" id="main-sidebar">
+                <div class="sidebar-header">
+                    <span>منوی مدیریت</span>
+                    <button class="close-btn" onclick="toggleMenu()">✖</button>
+                </div>
+                <a onclick="navigate('dashboard')" class="nav-item" id="nav-dashboard">📈 آمار و وضعیت</a>
+                <a onclick="navigate('users')" class="nav-item" id="nav-users">👥 مدیریت کاربران</a>
+                <a onclick="navigate('support')" class="nav-item" id="nav-support">🛠️ پشتیبانی و باگ‌ها</a>
             </nav>
             <main class="content" id="content-area"></main>
         </div>
     </div>
 
-    <!-- Modules -->
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/modules/utils.js"></script>
     <script src="assets/js/modules/admin-api.js"></script>
     <script src="assets/js/modules/admin-dashboard.js"></script>
     <script src="assets/js/modules/admin-support.js"></script>
+    <script src="assets/js/modules/admin-users.js"></script>
 
     <script>
         const session = checkAuth('admin');
-        if (session) document.getElementById('user-name').innerText = session.roleName;
+        if (session) {
+            document.getElementById('user-info').innerText = `${session.firstName} ${session.lastName} (${session.roleName})`;
+        }
+
+        function toggleMenu() {
+            document.getElementById('main-sidebar').classList.toggle('active');
+            document.getElementById('menu-overlay').classList.toggle('active');
+        }
 
         function navigate(view) {
+            if(window.innerWidth < 768) toggleMenu();
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            if (view === 'dashboard') { 
-                navItems[0].classList.add('active'); 
-                renderAdminDashboard(); 
-            }
-            if (view === 'support') { 
-                navItems[1].classList.add('active'); 
-                renderSupportPanel(); 
-            }
-            if (view === 'settings') { 
-                navItems[2].classList.add('active'); 
-                document.getElementById('content-area').innerHTML = '<div class="card"><h2>تنظیمات اکوسیستم</h2><p>این بخش برای مدیریت دسترسی‌ها و کلیدهای API در فاز بعدی توسعه می‌یابد.</p></div>'; 
-            }
+            const activeNav = document.getElementById(`nav-${view}`);
+            if(activeNav) activeNav.classList.add('active');
+
+            if (view === 'dashboard') renderAdminDashboard();
+            else if (view === 'users') renderUserManagement();
+            else if (view === 'support') renderSupportPanel();
         }
 
         window.onload = () => navigate('dashboard');
     </script>
-
-    <!-- اسکریپت‌های شما -->
-    <script>
-        // ثبت Service Worker برای PWA (در همه صفحات)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
-        }
-    </script>
-
 </body>
 </html>
