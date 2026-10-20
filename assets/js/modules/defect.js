@@ -3,6 +3,8 @@ let currentImageBase64 = null;
 function renderNewDefectForm() {
     const content = document.getElementById('content-area');
     currentImageBase64 = null;
+    const session = JSON.parse(localStorage.getItem('iqdws_session'));
+
     content.innerHTML = `
         <div class="card">
             <h2 class="card-title">ثبت ایراد جدید (حالت آفلاین)</h2>
@@ -77,6 +79,7 @@ async function submitDefectForm(e) {
 
     const severity = document.getElementById('d_severity').value;
     const defectCode = Utils.generateDefectCode(severity);
+    const session = JSON.parse(localStorage.getItem('iqdws_session'));
 
     const defectData = {
         defectCode: defectCode,
@@ -87,7 +90,8 @@ async function submitDefectForm(e) {
         desc: document.getElementById('d_desc').value,
         imageBase64: currentImageBase64,
         status: 'registered',
-        createdBy: JSON.parse(localStorage.getItem('iqdws_session')).roleName,
+        createdBy: session.username, // ثبت کد پرسنلی
+        createdByName: session.displayName, // ثبت نام نمایشی
         createdAt: new Date().toISOString()
     };
 
@@ -110,13 +114,14 @@ async function renderDefectList() {
                 <h2 class="card-title">لیست ایرادها</h2>
                 <div class="table-wrapper">
                     <table>
-                        <thead><tr><th>کد ایراد</th><th>عنوان</th><th>شدت</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                        <thead><tr><th>کد ایراد</th><th>عنوان</th><th>شدت</th><th>ثبت‌کننده</th><th>وضعیت</th><th>عملیات</th></tr></thead>
                         <tbody>
                             ${defects.map(d => `
                                 <tr>
                                     <td style="font-family:monospace; font-weight:bold; color:var(--primary);">${d.defectCode}</td>
                                     <td>${d.title}</td>
                                     <td><span class="badge sev-${d.severity}">${d.severity}</span></td>
+                                    <td>${d.createdByName} <span style="font-size:10px; color:#888;">(${d.createdBy})</span></td>
                                     <td><span class="badge status-${d.status}">${d.status}</span></td>
                                     <td>
                                         <button class="btn btn-sm btn-outline" onclick="navigate('defect-detail', '${d.defectCode}')">مشاهده</button>
@@ -124,7 +129,7 @@ async function renderDefectList() {
                                             `<button class="btn btn-sm btn-warning" onclick="openQANForm('${d.defectCode}')">صدور اخطار</button>` : ''}
                                     </td>
                                 </tr>
-                            `).join('') || '<tr><td colspan="5" style="text-align:center;">ایرادی یافت نشد</td></tr>'}
+                            `).join('') || '<tr><td colspan="6" style="text-align:center;">ایرادی یافت نشد</td></tr>'}
                         </tbody>
                     </table>
                 </div>
@@ -151,7 +156,8 @@ async function renderDefectDetail(code) {
             <div class="detail-row"><span class="lbl">شدت</span><span class="val"><span class="badge sev-${d.severity}">${d.severity}</span></span></div>
             <div class="detail-row"><span class="lbl">تعداد</span><span class="val">${d.qty}</span></div>
             <div class="detail-row"><span class="lbl">شرح</span><span class="val">${d.desc || '—'}</span></div>
-            <div class="detail-row"><span class="lbl">ثبت‌کننده</span><span class="val">${d.createdBy}</span></div>
+            <div class="detail-row"><span class="lbl">ثبت‌کننده</span><span class="val">${d.createdByName} (${d.createdBy})</span></div>
+            <div class="detail-row"><span class="lbl">تاریخ ثبت</span><span class="val">${Utils.formatDate(d.createdAt)}</span></div>
             ${d.imageBase64 ? `<div style="margin-top:15px;"><img src="${d.imageBase64}" style="max-width:100%; border-radius:8px;"></div>` : ''}
             <div style="margin-top:20px;">
                 <button class="btn btn-outline" onclick="navigate('defects')">← بازگشت به لیست</button>
