@@ -1,43 +1,56 @@
 async function renderAdminDashboard() {
     const content = document.getElementById('content-area');
-    content.innerHTML = `<p>در حال برقراری ارتباط با هسته سیستم...</p>`;
+    content.innerHTML = `<p>در حال دریافت اطلاعات از سرور ابری...</p>`;
     
     try {
-        const data = await AdminAPI.getStats();
-        const health = await AdminAPI.getSystemHealth();
+        const token = localStorage.getItem('iqdws_token');
         
+        // اگر توکن آفلاین باشد، یعنی از سرور لاگین نگرفته‌ایم
+        if (!token || token.includes('offline_token')) {
+            throw new Error('شما با حالت آفلاین وارد شده‌اید. لطفاً یک بار خارج شده و با اتصال به اینترنت مجدداً وارد شوید.');
+        }
+
+        // درخواست به سرور
+        const res = await fetch(`${window.API_BASE_URL}/users`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+            throw new Error('خطای احراز هویت (401). لطفاً از سیستم خارج شده و مجدداً لاگین کنید.');
+        }
+
+        if (!res.ok) {
+            throw new Error(`سرور پاسخ خطا داد (${res.status}). لطفاً لاگ‌های رندر را بررسی کنید.`);
+        }
+
+        const users = await res.json();
+
+        // اگر به اینجا رسیدیم یعنی اتصال برقرار است
         content.innerHTML = `
             <h2 class="page-title">داشبورد مدیریت اکوسیستم</h2>
             
             <div class="kpi-grid">
                 <div class="kpi-card" style="border-right-color: #4a148c;">
-                    <div class="kpi-title">کل ایرادها</div>
-                    <div class="kpi-value" style="color: #4a148c;">${data.defects.length}</div>
-                </div>
-                <div class="kpi-card" style="border-right-color: var(--warning);">
-                    <div class="kpi-title">اخطارهای کیفی</div>
-                    <div class="kpi-value" style="color: var(--warning);">${data.qans.length}</div>
-                </div>
-                <div class="kpi-card" style="border-right-color: var(--danger);">
-                    <div class="kpi-title">باگ‌های باز</div>
-                    <div class="kpi-value" style="color: var(--danger);">${data.bugs.filter(b => b.status === 'open').length}</div>
-                </div>
-                <div class="kpi-card" style="border-right-color: var(--secondary);">
-                    <div class="kpi-title">وضعیت سرور</div>
-                    <div class="kpi-value" style="color: var(--secondary); font-size: 18px;">${health.status === 'online' ? '✅ آنلاین' : 'قطع'}</div>
+                    <div class="kpi-title">کل کاربران سیستم</div>
+                    <div class="kpi-value" style="color: #4a148c;">${users.length || 0}</div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">اطلاعات فنی سیستم</div>
-                <table>
-                    <tr><td>نسخه نرم‌افزار</td><td>${health.version}</td></tr>
-                    <tr><td>وضعیت دیتابیس</td><td>${health.database}</td></tr>
-                    <tr><td>مدت زمان فعالیت (Uptime)</td><td>${Math.floor(health.uptime)} ثانیه</td></tr>
-                </table>
+                <div class="card-title">وضعیت سیستم</div>
+                <p style="color:green; font-weight:bold;">✅ اتصال به دیتابیس MongoDB Atlas برقرار است.</p>
+                <p style="font-size:12px; margin-top:10px;">شما در حال مشاهده داده‌های واقعی از سرور Render هستید.</p>
             </div>
         `;
     } catch (error) {
-        content.innerHTML = `<div class="alert-box" style="background:#ffebee; color:#c62828;">خطا در اتصال به بک‌اند: لطفا سرور را روشن کنید.</div>`;
+        // نمایش خطای دقیق به جای پیام کلی
+        content.innerHTML = `
+            <div class="alert-box" style="background:#ffebee; color:#c62828; border-right:4px solid #c62828;">
+                <strong style="display:block; margin-bottom:10px; font-size:15px;">خطا در اتصال به بک‌اند</strong>
+                <div style="font-size:13px; line-height:1.6;">${error.message}</div>
+                <br>
+                <button class="btn btn-sm btn-outline" style="color:#c62828; border-color:#c62828;" onclick="logout()">خروج و لاگین مجدد</button>
+            </div>
+        `;
     }
 }
