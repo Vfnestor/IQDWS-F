@@ -42,8 +42,6 @@ async function handleLogin() {
 
     try {
         const targetURL = `${window.API_BASE_URL}/auth/login`;
-        console.log("Attempting to connect to:", targetURL);
-
         const res = await fetch(targetURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -56,21 +54,30 @@ async function handleLogin() {
 
         localStorage.setItem('iqdws_token', data.token);
         localStorage.setItem('iqdws_session', JSON.stringify({
-            app: selectedApp,
-            roleId: roleId,
-            roleName: roleName
+            app: selectedApp, roleId: roleId, roleName: roleName
         }));
         
-        if (selectedApp === 'main') window.location.href = 'main.html';
-        else if (selectedApp === 'supplier') window.location.href = 'supplier.html';
-        else if (selectedApp === 'admin') window.location.href = 'admin.html';
+        redirectUser();
 
     } catch (error) {
-        console.error("Login Error Details:", error);
-        alert('خطای اتصال: ' + error.message);
-        loginBtn.disabled = false;
-        loginBtn.innerText = 'ورود به سامانه';
+        // اگر سرور خواب بود، برای تست آفلاین به کاربر اجازه ورود بدهیم
+        if (confirm('سرور Render در دسترس نیست (یا خواب است).\nآیا می‌خواهید در حالت آفلاین (تست) وارد شوید؟\n\nتوجه: در این حالت داده‌ها فقط در گوشی/کامپیوتر شما ذخیره می‌شوند.')) {
+            localStorage.setItem('iqdws_token', 'offline_mock_token');
+            localStorage.setItem('iqdws_session', JSON.stringify({
+                app: selectedApp, roleId: roleId, roleName: roleName
+            }));
+            redirectUser();
+        } else {
+            loginBtn.disabled = false;
+            loginBtn.innerText = 'ورود به سامانه';
+        }
     }
+}
+
+function redirectUser() {
+    if (selectedApp === 'main') window.location.href = 'main.html';
+    else if (selectedApp === 'supplier') window.location.href = 'supplier.html';
+    else if (selectedApp === 'admin') window.location.href = 'admin.html';
 }
 
 function checkAuth(expectedApp) {
