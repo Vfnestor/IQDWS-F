@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سامانه مادر | IQDWS</title>
-    <!-- لینک به مانیفست PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b3d6b">
     
@@ -13,7 +12,6 @@
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/tables.css">
     <link rel="stylesheet" href="assets/css/analytics.css">
-    <!-- کتابخانه برش عکس -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
@@ -21,6 +19,10 @@
         <header class="app-header">
             <div class="header-brand">🏭 سامانه مادر IQDWS</div>
             <div class="header-user">
+                <!-- دکمه آپلود به سرور -->
+                <button id="sync-btn" class="btn btn-sm" style="background:#2e7d32; color:white; margin-left:15px;" onclick="SyncManager.processQueue()">
+                    ☁️ آپلود به سرور
+                </button>
                 <span id="user-name">نقش کاربر</span>
                 <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
@@ -49,18 +51,15 @@
     <script src="assets/js/modules/qan.js"></script>
     <script src="assets/js/modules/main-analytics.js"></script>
 
-    <!-- کتابخانه برش عکس -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <script>
-        // ثبت Service Worker برای PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js');
             });
         }
 
-        // راه‌اندازی سیستم همگام‌سازی آفلاین
         SyncManager.init();
 
         const session = checkAuth('main');
