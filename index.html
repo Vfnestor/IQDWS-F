@@ -13,38 +13,26 @@
             <h1 class="login-title">سامانه IQDWS</h1>
             <p class="login-subtitle">مدیریت هوشمند کیفیت، ایراد، گارانتی و اخطار کیفی</p>
 
-            <div class="form-group">
-                <label>۱. انتخاب سامانه:</label>
-                <div class="app-tiles">
-                    <div class="app-tile" onclick="selectApp('main')" id="tile-main">
-                        <span class="icon">🏭</span>
-                        <h3>سامانه مادر</h3>
-                        <p>ثبت ایراد و پیگیری</p>
-                    </div>
-                    <div class="app-tile" onclick="selectApp('supplier')" id="tile-supplier">
-                        <span class="icon">🔧</span>
-                        <h3>سامانه سازنده</h3>
-                        <p>بازرسی و پاسخ ۸D</p>
-                    </div>
-                    <div class="app-tile" onclick="selectApp('admin')" id="tile-admin">
-                        <span class="icon">⚙️</span>
-                        <h3>پنل مدیریت</h3>
-                        <p>پشتیبانی و اکوسیستم</p>
-                    </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>نام کاربری (کد پرسنلی) <span class="req">*</span></label>
+                    <input type="text" id="login-username" class="form-control" placeholder="مثال: 123456" required>
                 </div>
+                <div class="form-group">
+                    <label>رمز عبور <span class="req">*</span></label>
+                    <input type="password" id="login-password" class="form-control" placeholder="••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="login-btn">ورود به سامانه</button>
+            </form>
+            
+            <div style="margin-top:20px; font-size:11px; text-align:center; color:#888;">
+                برای تست: نام کاربری <b>admin</b> و رمز <b>admin</b><br>
+                (سایر کاربران: 101، 102، 103 با رمز 123456)
             </div>
-
-            <div class="form-group" id="role-container" style="display: none;">
-                <label>۲. انتخاب نقش:</label>
-                <select id="role-select" class="form-control"></select>
-            </div>
-
-            <button class="btn btn-primary btn-block" id="login-btn" onclick="handleLogin()" disabled>ورود به سامانه</button>
         </div>
     </div>
 
-    <!-- ?v=3 برای جلوگیری از کش شدن -->
-    <script src="assets/js/config.js?v=3"></script>
-    <script src="assets/js/auth.js?v=3"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/auth.js"></script>
 </body>
 </html>
