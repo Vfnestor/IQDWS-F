@@ -14,25 +14,40 @@ async function handleResponse(res) {
     }
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `خطای سرور: ${res.status}`);
+        throw new Error(errorData.error || `کد خطا: ${res.status}`);
     }
     return await res.json();
 }
 
 const API = {
     getDefects: async () => {
-        const res = await fetch(`${window.API_BASE_URL}/defects`, { headers: getHeaders() });
-        return handleResponse(res);
+        try {
+            const res = await fetch(`${window.API_BASE_URL}/defects`, { headers: getHeaders() });
+            return handleResponse(res);
+        } catch (e) {
+            if(e.message === 'Failed to fetch') throw new Error('عدم برقراری ارتباط با سرور (سرور خواب است یا اینترنت شما قطع شده)');
+            throw e;
+        }
     },
     createDefect: async (data) => {
-        const res = await fetch(`${window.API_BASE_URL}/defects`, {
-            method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
-        });
-        return handleResponse(res);
+        try {
+            const res = await fetch(`${window.API_BASE_URL}/defects`, {
+                method: 'POST', headers: getHeaders(), body: JSON.stringify(data)
+            });
+            return handleResponse(res);
+        } catch (e) {
+            if(e.message === 'Failed to fetch') throw new Error('عدم برقراری ارتباط با سرور (CORS یا قطعی اینترنت)');
+            throw e;
+        }
     },
     getQANs: async () => {
-        const res = await fetch(`${window.API_BASE_URL}/qans`, { headers: getHeaders() });
-        return handleResponse(res);
+        try {
+            const res = await fetch(`${window.API_BASE_URL}/qans`, { headers: getHeaders() });
+            return handleResponse(res);
+        } catch (e) {
+            if(e.message === 'Failed to fetch') throw new Error('عدم برقراری ارتباط با سرور');
+            throw e;
+        }
     },
     createQAN: async (data) => {
         const res = await fetch(`${window.API_BASE_URL}/qans`, {
