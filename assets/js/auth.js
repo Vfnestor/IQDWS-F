@@ -38,11 +38,11 @@ async function handleLogin() {
     const loginBtn = document.getElementById('login-btn');
     
     loginBtn.disabled = true;
-    loginBtn.innerText = 'در حال اتصال به سرور...';
+    loginBtn.innerText = 'در حال اتصال...';
 
     try {
         const targetURL = `${window.API_BASE_URL}/auth/login`;
-        console.log("Connecting to:", targetURL); // برای دیباگ در کنسول
+        console.log("Attempting to connect to:", targetURL);
 
         const res = await fetch(targetURL, {
             method: 'POST',
@@ -50,7 +50,7 @@ async function handleLogin() {
             body: JSON.stringify({ role: roleId, app: selectedApp })
         });
 
-        if (!res.ok) throw new Error(`سرور پاسخ خطا داد: ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
         
         const data = await res.json();
 
@@ -66,8 +66,8 @@ async function handleLogin() {
         else if (selectedApp === 'admin') window.location.href = 'admin.html';
 
     } catch (error) {
-        // نمایش دقیق خطا برای فهمیدن مشکل
-        alert('خطای اتصال: ' + error.message + '\n\nمطمئن شوید آدرس بک‌اند در config.js درست است.');
+        console.error("Login Error Details:", error);
+        alert('خطای اتصال: ' + error.message);
         loginBtn.disabled = false;
         loginBtn.innerText = 'ورود به سامانه';
     }
