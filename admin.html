@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>پنل مدیریت | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css?v=6">
-    <link rel="stylesheet" href="assets/css/components.css?v=6">
-    <link rel="stylesheet" href="assets/css/forms.css?v=6">
-    <link rel="stylesheet" href="assets/css/tables.css?v=6">
-    <link rel="stylesheet" href="assets/css/admin.css?v=6">
+    <link rel="stylesheet" href="assets/css/main.css?v=7">
+    <link rel="stylesheet" href="assets/css/components.css?v=7">
+    <link rel="stylesheet" href="assets/css/forms.css?v=7">
+    <link rel="stylesheet" href="assets/css/tables.css?v=7">
+    <link rel="stylesheet" href="assets/css/admin.css?v=7">
 </head>
 <body>
     <div id="app" class="app-layout">
@@ -37,14 +37,14 @@
         </div>
     </div>
 
-    <script src="assets/js/config.js?v=6"></script>
-    <script src="assets/js/auth.js?v=6"></script>
-    <script src="assets/js/modules/utils.js?v=6"></script>
-    <script src="assets/js/modules/offline-db.js?v=6"></script>
-    <script src="assets/js/modules/admin-api.js?v=6"></script>
-    <script src="assets/js/modules/admin-dashboard.js?v=6"></script>
-    <script src="assets/js/modules/admin-support.js?v=6"></script>
-    <script src="assets/js/modules/admin-users.js?v=6"></script>
+    <script src="assets/js/config.js?v=7"></script>
+    <script src="assets/js/auth.js?v=7"></script>
+    <script src="assets/js/modules/utils.js?v=7"></script>
+    <script src="assets/js/modules/offline-db.js?v=7"></script>
+    <script src="assets/js/modules/admin-api.js?v=7"></script>
+    <script src="assets/js/modules/admin-dashboard.js?v=7"></script>
+    <script src="assets/js/modules/admin-support.js?v=7"></script>
+    <script src="assets/js/modules/admin-users.js?v=7"></script>
 
     <script>
         const session = checkAuth('admin');
@@ -65,7 +65,7 @@
 
             if (view === 'users') {
                 adminUserView = 'list';
-                currentSearchFilter = { role: '', username: '', defectCode: '' };
+                currentSearchFilter = { role: '', username: '' };
             }
 
             if (view === 'dashboard') renderAdminDashboard();
