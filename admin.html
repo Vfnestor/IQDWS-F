@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>پنل مدیریت | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css?v=3">
-    <link rel="stylesheet" href="assets/css/components.css?v=3">
-    <link rel="stylesheet" href="assets/css/forms.css?v=3">
-    <link rel="stylesheet" href="assets/css/tables.css?v=3">
-    <link rel="stylesheet" href="assets/css/admin.css?v=3">
+    <link rel="stylesheet" href="assets/css/main.css?v=6">
+    <link rel="stylesheet" href="assets/css/components.css?v=6">
+    <link rel="stylesheet" href="assets/css/forms.css?v=6">
+    <link rel="stylesheet" href="assets/css/tables.css?v=6">
+    <link rel="stylesheet" href="assets/css/admin.css?v=6">
 </head>
 <body>
     <div id="app" class="app-layout">
         <header class="app-header admin-header">
             <div class="header-brand">
                 <button class="menu-btn" onclick="toggleMenu()">☰</button>
-                ⚙️ پنل مدیریت اکوسیستم
+                ⚙️ پنل مدیریت اکوسیستم (آفلاین)
             </div>
             <div class="header-user">
                 <span id="user-info" style="font-weight:bold; font-size:13px;"></span>
@@ -37,14 +37,14 @@
         </div>
     </div>
 
-    <!-- اسکریپت‌ها با نسخه 3 برای دور زدن کش -->
-    <script src="assets/js/config.js?v=3"></script>
-    <script src="assets/js/auth.js?v=3"></script>
-    <script src="assets/js/modules/utils.js?v=3"></script>
-    <script src="assets/js/modules/admin-api.js?v=3"></script>
-    <script src="assets/js/modules/admin-dashboard.js?v=3"></script>
-    <script src="assets/js/modules/admin-support.js?v=3"></script>
-    <script src="assets/js/modules/admin-users.js?v=3"></script>
+    <script src="assets/js/config.js?v=6"></script>
+    <script src="assets/js/auth.js?v=6"></script>
+    <script src="assets/js/modules/utils.js?v=6"></script>
+    <script src="assets/js/modules/offline-db.js?v=6"></script>
+    <script src="assets/js/modules/admin-api.js?v=6"></script>
+    <script src="assets/js/modules/admin-dashboard.js?v=6"></script>
+    <script src="assets/js/modules/admin-support.js?v=6"></script>
+    <script src="assets/js/modules/admin-users.js?v=6"></script>
 
     <script>
         const session = checkAuth('admin');
@@ -63,7 +63,6 @@
             const activeNav = document.getElementById(`nav-${view}`);
             if(activeNav) activeNav.classList.add('active');
 
-            // ریست کردن وضعیت صفحه کاربران هنگام ورود
             if (view === 'users') {
                 adminUserView = 'list';
                 currentSearchFilter = { role: '', username: '', defectCode: '' };
