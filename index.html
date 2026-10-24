@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ورود به سامانه | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/main.css?v=15">
+    <link rel="stylesheet" href="assets/css/components.css?v=15">
 </head>
 <body class="login-body">
     <div class="login-container">
@@ -16,7 +16,7 @@
             <form id="login-form" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label>نام کاربری (کد پرسنلی) <span class="req">*</span></label>
-                    <input type="text" id="login-username" class="form-control" placeholder="مثال: 123456" required>
+                    <input type="text" id="login-username" class="form-control" placeholder="مثال: admin" required>
                 </div>
                 <div class="form-group">
                     <label>رمز عبور <span class="req">*</span></label>
@@ -26,13 +26,15 @@
             </form>
             
             <div style="margin-top:20px; font-size:11px; text-align:center; color:#888;">
-                برای تست: نام کاربری <b>admin</b> و رمز <b>admin</b><br>
-                (سایر کاربران: 101، 102، 103 با رمز 123456)
+                برای تست: <b>admin</b> / <b>admin</b>
             </div>
         </div>
     </div>
 
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/auth.js"></script>
+    <!-- لود کردن تمام فایل‌های ضروری قبل از لاگین -->
+    <script src="assets/js/config.js?v=15"></script>
+    <script src="assets/js/modules/utils.js?v=15"></script>
+    <script src="assets/js/modules/offline-db.js?v=15"></script>
+    <script src="assets/js/auth.js?v=15"></script>
 </body>
 </html>
