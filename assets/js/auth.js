@@ -77,7 +77,9 @@ function changeFirstPassword(username) {
 function loginSuccess(user) {
     localStorage.setItem('iqdws_token', 'offline_token_' + Date.now());
     
-    const displayName = user.role === 'supplier' ? user.companyName : `${user.firstName} ${user.lastName}`;
+    let displayName = user.username;
+    if (user.role === 'supplier') displayName = user.companyName || 'شرکت بدون نام';
+    else displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'کارمند بدون نام';
 
     localStorage.setItem('iqdws_session', JSON.stringify({
         username: user.username,
