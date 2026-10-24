@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>پنل مدیریت | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css?v=11">
-    <link rel="stylesheet" href="assets/css/components.css?v=11">
-    <link rel="stylesheet" href="assets/css/forms.css?v=11">
-    <link rel="stylesheet" href="assets/css/tables.css?v=11">
-    <link rel="stylesheet" href="assets/css/admin.css?v=11">
+    <link rel="stylesheet" href="assets/css/main.css?v=15">
+    <link rel="stylesheet" href="assets/css/components.css?v=15">
+    <link rel="stylesheet" href="assets/css/forms.css?v=15">
+    <link rel="stylesheet" href="assets/css/tables.css?v=15">
+    <link rel="stylesheet" href="assets/css/admin.css?v=15">
 </head>
 <body>
     <div id="app" class="app-layout">
@@ -37,14 +37,14 @@
         </div>
     </div>
 
-    <script src="assets/js/config.js?v=11"></script>
-    <script src="assets/js/auth.js?v=11"></script>
-    <script src="assets/js/modules/utils.js?v=11"></script>
-    <script src="assets/js/modules/offline-db.js?v=11"></script>
-    <script src="assets/js/modules/admin-api.js?v=11"></script>
-    <script src="assets/js/modules/admin-dashboard.js?v=11"></script>
-    <script src="assets/js/modules/admin-support.js?v=11"></script>
-    <script src="assets/js/modules/admin-users.js?v=11"></script>
+    <script src="assets/js/config.js?v=15"></script>
+    <script src="assets/js/auth.js?v=15"></script>
+    <script src="assets/js/modules/utils.js?v=15"></script>
+    <script src="assets/js/modules/offline-db.js?v=15"></script>
+    <script src="assets/js/modules/admin-api.js?v=15"></script>
+    <script src="assets/js/modules/admin-dashboard.js?v=15"></script>
+    <script src="assets/js/modules/admin-support.js?v=15"></script>
+    <script src="assets/js/modules/admin-users.js?v=15"></script>
 
     <script>
         const session = checkAuth('admin');
@@ -74,7 +74,11 @@
             else if (view === 'support') renderSupportPanel();
         }
 
-        window.onload = () => navigate('dashboard');
+        // راه‌اندازی دیتابیس محلی و سپس لود صفحه
+        window.onload = async () => {
+            await OfflineDB.init(); // <--- این خط مشکل پروفایل را حل می‌کند
+            navigate('dashboard');
+        };
     </script>
 </body>
 </html>
