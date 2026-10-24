@@ -5,10 +5,12 @@ let currentSearchFilter = { role: '', username: '' };
 async function renderUserManagement() {
     const content = document.getElementById('content-area');
     
+    // مسیریابی صفحات
     if (adminUserView === 'create') return renderCreateUserForm(content);
     if (adminUserView === 'edit') return renderEditUserForm(content, activityTargetUser);
-    if (adminUserView === 'activity' && activityTargetUser) return renderUserProfile(content, activityTargetUser);
+    if (adminUserView === 'profile') return renderUserProfile(content, activityTargetUser);
 
+    // حالت لیست کاربران
     const users = await AdminAPI.getUsers();
 
     let filteredUsers = users.filter(u => {
@@ -61,9 +63,9 @@ async function renderUserManagement() {
                             <td>${u.isFirstLogin ? '<span style="color:#c62828; font-size:11px;">در انتظار تغییر رمز</span>' : '<span style="color:#2e7d32; font-size:11px;">فعال</span>'}</td>
                             <td>
                                 <div class="action-btns">
-                                    <button class="btn-icon view" onclick="viewUserActivity('${u.username}')" title="مشاهده پروفایل">👁️ پروفایل</button>
-                                    <button class="btn-icon edit" onclick="openEditUserForm('${u.username}')" title="ویرایش">✏️ ویرایش</button>
-                                    <button class="btn-icon delete" onclick="deleteUser('${u.username}')" title="حذف">🗑️ حذف</button>
+                                    <button class="btn-icon view" onclick="openUserProfile('${u.username}')">👁️ پروفایل</button>
+                                    <button class="btn-icon edit" onclick="openEditUserForm('${u.username}')">✏️ ویرایش</button>
+                                    <button class="btn-icon delete" onclick="deleteUser('${u.username}')">🗑️ حذف</button>
                                 </div>
                             </td>
                         </tr>
@@ -74,17 +76,14 @@ async function renderUserManagement() {
     `;
 }
 
-// --- عملیات جستجو ---
-function applyUserSearch() {
-    currentSearchFilter = { role: document.getElementById('search_role').value, username: document.getElementById('search_username').value.trim() };
-    renderUserManagement();
-}
+// --- توابع ناوبری ---
+function applyUserSearch() { currentSearchFilter = { role: document.getElementById('search_role').value, username: document.getElementById('search_username').value.trim() }; renderUserManagement(); }
 function resetUserSearch() { currentSearchFilter = { role: '', username: '' }; renderUserManagement(); }
 function openCreateUserForm() { adminUserView = 'create'; renderUserManagement(); }
-function viewUserActivity(username) { activityTargetUser = username; adminUserView = 'activity'; renderUserManagement(); }
+function openUserProfile(username) { activityTargetUser = username; adminUserView = 'profile'; renderUserManagement(); }
 function openEditUserForm(username) { activityTargetUser = username; adminUserView = 'edit'; renderUserManagement(); }
 
-// --- ایجاد کاربر ---
+// --- ایجاد کاربر جدید ---
 function renderCreateUserForm(content) {
     content.innerHTML = `
         <div style="margin-bottom:15px;"><button class="btn btn-outline" onclick="adminUserView='list'; renderUserManagement();">← بازگشت</button></div>
@@ -92,7 +91,7 @@ function renderCreateUserForm(content) {
             <h2 class="card-title">ایجاد کاربر جدید</h2>
             <form onsubmit="saveNewUser(event)">
                 <div class="form-row">
-                    <div class="form-col"><div class="form-field"><label>نام کاربری (کد پرسنلی) <span class="req">*</span></label><input type="text" id="u_username" class="form-control" required></div></div>
+                    <div class="form-col"><div class="form-field"><label>نام کاربری <span class="req">*</span></label><input type="text" id="u_username" class="form-control" required></div></div>
                     <div class="form-col"><div class="form-field"><label>رمز عبور <span class="req">*</span></label><input type="text" id="u_password" class="form-control" value="123456" required></div></div>
                 </div>
                 <div class="form-row">
@@ -143,7 +142,7 @@ async function saveNewUser(e) {
     renderUserManagement();
 }
 
-// --- ویرایش کاربر ---
+// --- ویرایش کامل کاربر ---
 function renderEditUserForm(content, username) {
     const users = JSON.parse(localStorage.getItem('iqdws_users'));
     const user = users.find(u => u.username === username);
@@ -158,11 +157,38 @@ function renderEditUserForm(content, username) {
                     <div class="form-col"><div class="form-field"><label>نام</label><input type="text" id="e_firstname" class="form-control" value="${user.firstName || ''}"></div></div>
                     <div class="form-col"><div class="form-field"><label>نام خانوادگی</label><input type="text" id="e_lastname" class="form-control" value="${user.lastName || ''}"></div></div>
                 </div>
-                ${user.role === 'supplier' ? `<div class="form-field"><label>نام شرکت</label><input type="text" id="e_company" class="form-control" value="${user.companyName || ''}"></div>` : ''}
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-field">
+                            <label>نقش</label>
+                            <select id="e_role" class="form-control" required onchange="document.getElementById('e_company_field').style.display = this.value === 'supplier' ? 'block' : 'none'">
+                                <option value="inspector" ${user.role === 'inspector' ? 'selected' : ''}>بازرس خط</option>
+                                <option value="expert" ${user.role === 'expert' ? 'selected' : ''}>کارشناس قطعه</option>
+                                <option value="dept_head" ${user.role === 'dept_head' ? 'selected' : ''}>مسول بخش</option>
+                                <option value="office_head" ${user.role === 'office_head' ? 'selected' : ''}>رئیس اداره</option>
+                                <option value="supplier" ${user.role === 'supplier' ? 'selected' : ''}>سازنده</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col" id="e_company_field" style="display:${user.role === 'supplier' ? 'block' : 'none'};">
+                        <div class="form-field"><label>نام شرکت سازنده</label><input type="text" id="e_company" class="form-control" value="${user.companyName || ''}"></div>
+                    </div>
+                </div>
+
                 <div class="form-row">
                     <div class="form-col"><div class="form-field"><label>رمز عبور جدید (برای تغییر پر کنید)</label><input type="text" id="e_password" class="form-control" placeholder="خالی بگذارید تا تغییر نکند"></div></div>
+                    <div class="form-col">
+                        <div class="form-field">
+                            <label>وضعیت حساب</label>
+                            <select id="e_isFirstLogin" class="form-control">
+                                <option value="false" ${!user.isFirstLogin ? 'selected' : ''}>فعال</option>
+                                <option value="true" ${user.isFirstLogin ? 'selected' : ''}>اجبار به تغییر رمز در ورود بعدی</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-warning" style="margin-top:15px;">ذخیره تغییرات</button>
+                <button type="submit" class="btn btn-warning" style="margin-top:15px;">ذخیره تغییرات کامل</button>
             </form>
         </div>
     `;
@@ -175,13 +201,15 @@ function saveEditUser(e, username) {
     
     users[idx].firstName = document.getElementById('e_firstname').value;
     users[idx].lastName = document.getElementById('e_lastname').value;
-    if(document.getElementById('e_company')) users[idx].companyName = document.getElementById('e_company').value;
+    users[idx].role = document.getElementById('e_role').value;
+    users[idx].isFirstLogin = document.getElementById('e_isFirstLogin').value === 'true';
     
+    if(document.getElementById('e_company')) users[idx].companyName = document.getElementById('e_company').value;
     const newPass = document.getElementById('e_password').value;
     if(newPass) users[idx].password = newPass;
 
     localStorage.setItem('iqdws_users', JSON.stringify(users));
-    Utils.toast('تغییرات ذخیره شد');
+    Utils.toast('تغییرات کامل ذخیره شد');
     adminUserView = 'list';
     renderUserManagement();
 }
@@ -196,114 +224,187 @@ function deleteUser(username) {
     renderUserManagement();
 }
 
-// --- پروفایل کامل و تایم‌لاین کاربر ---
+// --- پروفایل کامل و هوشمند (بر اساس نقش) ---
 async function renderUserProfile(content, username) {
     const users = await AdminAPI.getUsers();
     const user = users.find(u => u.username === username);
     if (!user) return content.innerHTML = '<p>کاربر یافت نشد.</p>';
 
     const displayName = user.role === 'supplier' ? user.companyName : `${user.firstName} ${user.lastName}`;
-    const activity = await AdminAPI.getUserActivity(username);
+    
+    // دریافت داده‌ها از دیتابیس محلی
+    const defects = await OfflineDB.getDefects();
+    const qans = await OfflineDB.getQANs();
     const tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || '[]');
 
-    // محاسبه آمار برای نمودار
-    const criticalCount = activity.defects.filter(d => d.severity === 'critical').length;
-    const majorCount = activity.defects.filter(d => d.severity === 'major').length;
-    const minorCount = activity.defects.filter(d => d.severity === 'minor').length;
+    // فیلتر کردن داده‌ها بر اساس کاربر
+    const myDefects = defects.filter(d => d.createdBy === username);
+    const myQANs = qans.filter(q => q.createdBy === username);
+
+    // ساخت نمودار ۷ روز اخیر
+    const chartData = getLast7DaysData(myDefects, myQANs, user.role);
+
+    // محاسبه آمار بر اساس نقش
+    let stats = [];
+    if (user.role === 'inspector') {
+        stats = [
+            { label: 'کل ایرادات ثبت‌شده', value: myDefects.length },
+            { label: 'ایرادات در حال پیگیری', value: myDefects.filter(d => d.status !== 'closed').length },
+            { label: 'ایرادات رفع‌شده', value: myDefects.filter(d => d.status === 'closed').length }
+        ];
+    } else if (user.role === 'expert') {
+        stats = [
+            { label: 'اخطارهای صادرشده', value: myQANs.length },
+            { label: 'اخطارهای تایید شده', value: myQANs.filter(q => q.status === 'approved').length },
+            { label: 'اخطارهای رد شده', value: myQANs.filter(q => q.status === 'rejected').length }
+        ];
+    } else if (user.role === 'dept_head' || user.role === 'office_head') {
+        stats = [
+            { label: 'تاییدیه‌های صادرشده', value: myQANs.filter(q => q.status === 'approved').length },
+            { label: 'ردیه‌های صادرشده', value: myQANs.filter(q => q.status === 'rejected').length }
+        ];
+    } else if (user.role === 'supplier') {
+        stats = [
+            { label: 'اخطارهای دریافتی', value: qans.length },
+            { label: 'پاسخ‌های 8D ارسالی', value: 2 } // فرضی برای تست
+        ];
+    }
 
     content.innerHTML = `
         <div style="margin-bottom:15px;"><button class="btn btn-outline" onclick="adminUserView='list'; renderUserManagement();">← بازگشت به لیست</button></div>
         
         <!-- هدر پروفایل -->
-        <div class="profile-header">
+        <div class="profile-header-card">
             <div class="profile-avatar">${displayName.charAt(0)}</div>
-            <div class="profile-info">
+            <div class="profile-details">
                 <h2>${displayName}</h2>
-                <p>کد پرسنلی: <b>${user.username}</b> | نقش: <b>${roleNames[user.role]}</b></p>
-                <p>وضعیت حساب: ${user.isFirstLogin ? '⚠️ نیازمند تغییر رمز' : '✅ فعال'}</p>
-            </div>
-            <div style="margin-right:auto; text-align:center;">
-                <div style="font-size:24px; font-weight:bold; color:#4a148c;">${activity.defects.length + activity.qans.length}</div>
-                <div style="font-size:11px; color:#666;">کل فعالیت‌ها</div>
+                <p>کد پرسنلی / نام کاربری: <b>${user.username}</b></p>
+                <p>وضعیت: ${user.isFirstLogin ? '⚠️ نیازمند تغییر رمز' : '✅ فعال'}</p>
+                <span class="profile-badge">${roleNames[user.role] || user.role}</span>
             </div>
         </div>
 
-        <div class="form-row">
-            <!-- ستون راست: آمار و نمودار -->
-            <div class="form-col" style="flex: 2;">
-                <div class="card">
-                    <h3 class="card-title">📊 نمودار ایرادهای ثبت‌شده</h3>
-                    <div class="chart-container">
-                        <div class="chart-bar" style="height: ${Math.max((criticalCount/10)*100, 5)}%; background:#ef5350;">
-                            <span class="chart-val">${criticalCount}</span>
-                            <span class="chart-lbl">بحرانی</span>
-                        </div>
-                        <div class="chart-bar" style="height: ${Math.max((majorCount/10)*100, 5)}%; background:#ffa726;">
-                            <span class="chart-val">${majorCount}</span>
-                            <span class="chart-lbl">ماژور</span>
-                        </div>
-                        <div class="chart-bar" style="height: ${Math.max((minorCount/10)*100, 5)}%; background:#66bb6a;">
-                            <span class="chart-val">${minorCount}</span>
-                            <span class="chart-lbl">مینور</span>
-                        </div>
-                    </div>
+        <!-- آمار بر اساس نقش -->
+        <div class="stats-grid">
+            ${stats.map(s => `
+                <div class="stat-card">
+                    <div class="stat-val">${s.value}</div>
+                    <div class="stat-lbl">${s.label}</div>
                 </div>
+            `).join('')}
+        </div>
 
-                <div class="card">
-                    <h3 class="card-title">📋 تاریخچه فعالیت‌ها (Timeline)</h3>
-                    <div class="timeline">
-                        ${activity.defects.map(d => `
-                            <div class="timeline-item">
-                                <div class="timeline-date">${Utils.formatDate(d.createdAt)}</div>
-                                <div class="timeline-content">ثبت ایراد <b>${d.defectCode}</b> (${d.title})</div>
-                            </div>
-                        `).join('')}
-                        ${activity.qans.map(q => `
-                            <div class="timeline-item">
-                                <div class="timeline-date">${Utils.formatDate(q.createdAt)}</div>
-                                <div class="timeline-content">صدور اخطار <b>${q.qanId.split('-')[1]}</b> برای ایراد ${q.defectCode}</div>
-                            </div>
-                        `).join('')}
-                        ${activity.defects.length === 0 && activity.qans.length === 0 ? '<p style="color:#888; font-size:12px;">فعالیتی ثبت نشده است.</p>' : ''}
+        <!-- نمودار فعالیت ۷ روز اخیر -->
+        <div class="chart-wrap">
+            <h3 style="font-size:14px; color:#4a148c; margin-bottom:15px;">📈 نمودار فعالیت ۷ روز اخیر</h3>
+            <div class="chart-area">
+                ${chartData.map(d => `
+                    <div class="chart-column">
+                        <div class="chart-bar ${d.colorClass}" style="height: ${d.percent}%;">
+                            <span class="chart-val">${d.count}</span>
+                        </div>
+                        <span class="chart-lbl">${d.dayName}</span>
                     </div>
-                </div>
+                `).join('')}
             </div>
+        </div>
 
-            <!-- ستون چپ: تسک‌ها و درخواست‌ها -->
-            <div class="form-col" style="flex: 1;">
-                <div class="card">
-                    <h3 class="card-title">📝 ارسال درخواست / تسک جدید</h3>
-                    <form onsubmit="assignTask(event, '${user.username}')">
-                        <div class="form-field">
-                            <textarea id="task_desc" class="form-control" placeholder="شرح درخواست..." required style="min-height:80px;"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width:100%; background:#4a148c;">ثبت تسک</button>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <h3 class="card-title">📬 تسک‌های فعال</h3>
-                    ${tasks.map((t, i) => `
-                        <div class="task-card">
-                            <div style="font-size:11px; color:#e65100; font-weight:bold;">${t.date}</div>
-                            <div style="font-size:13px; margin-top:4px;">${t.desc}</div>
-                        </div>
-                    `).join('') || '<p style="color:#888; font-size:12px;">تسکی وجود ندارد.</p>'}
-                </div>
+        <!-- جدول تسک‌ها -->
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 class="card-title" style="border:none; margin:0; padding:0;">📋 تسک‌های کاربر</h3>
+                <button class="btn btn-sm btn-primary" style="background:#4a148c;" onclick="openAddTaskModal('${username}')">➕ تسک جدید</button>
+            </div>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>شرح تسک</th><th>تاریخ ثبت</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                    <tbody>
+                        ${tasks.map((t, i) => `
+                            <tr>
+                                <td>${t.desc}</td>
+                                <td>${t.date}</td>
+                                <td>
+                                    <span class="task-badge ${t.status === 'done' ? 'task-done' : 'task-pending'}" onclick="toggleTaskStatus('${username}', ${i})">
+                                        ${t.status === 'done' ? '✅ انجام شده' : '⏳ در انتظار'}
+                                    </span>
+                                </td>
+                                <td><button class="btn-icon delete" onclick="deleteTask('${username}', ${i})">حذف</button></td>
+                            </tr>
+                        `).join('') || '<tr><td colspan="4" style="text-align:center;">تسکی ثبت نشده است</td></tr>'}
+                    </tbody>
+                </table>
             </div>
         </div>
     `;
 }
 
-function assignTask(e, username) {
-    e.preventDefault();
-    const desc = document.getElementById('task_desc').value.trim();
-    if(!desc) return;
+// --- محاسبه داده‌های نمودار ۷ روز اخیر ---
+function getLast7DaysData(defects, qans, role) {
+    const days = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+    const result = [];
+    let maxCount = 1;
+
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayName = days[d.getDay()];
+
+        let count = 0;
+        if (role === 'inspector') {
+            count = defects.filter(x => x.createdAt && x.createdAt.startsWith(dateStr)).length;
+        } else {
+            count = qans.filter(x => x.createdAt && x.createdAt.startsWith(dateStr)).length;
+        }
+
+        if (count > maxCount) maxCount = count;
+        result.push({ dayName, count, dateStr });
+    }
+
+    return result.map(x => ({
+        ...x,
+        percent: Math.max((x.count / maxCount) * 100, 4), // حداقل ۴ درصد برای دیده شدن
+        colorClass: role === 'inspector' ? '' : (role === 'expert' ? 'orange' : 'green')
+    }));
+}
+
+// --- مدیریت تسک‌ها ---
+function openAddTaskModal(username) {
+    Utils.openModal(`
+        <h3 style="color:#4a148c; margin-bottom:15px;">افزودن تسک جدید</h3>
+        <div class="form-field">
+            <label>شرح تسک</label>
+            <textarea id="new_task_desc" class="form-control" required></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%; margin-top:10px; background:#4a148c;" onclick="saveNewTask('${username}')">ثبت تسک</button>
+    `);
+}
+
+function saveNewTask(username) {
+    const desc = document.getElementById('new_task_desc').value.trim();
+    if(!desc) return Utils.toast('شرح تسک الزامی است', 'error');
 
     let tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || '[]');
     tasks.unshift({ desc, date: new Date().toLocaleDateString('fa-IR'), status: 'pending' });
     localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
 
-    Utils.toast('تسک با موفقیت برای کاربر ثبت شد');
+    Utils.closeModal();
+    Utils.toast('تسک ثبت شد');
+    renderUserProfile(document.getElementById('content-area'), username);
+}
+
+function toggleTaskStatus(username, index) {
+    let tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || '[]');
+    tasks[index].status = tasks[index].status === 'done' ? 'pending' : 'done';
+    localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
+    renderUserProfile(document.getElementById('content-area'), username);
+}
+
+function deleteTask(username, index) {
+    if(!confirm('حذف این تسک؟')) return;
+    let tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || '[]');
+    tasks.splice(index, 1);
+    localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
     renderUserProfile(document.getElementById('content-area'), username);
 }
