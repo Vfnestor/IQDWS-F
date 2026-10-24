@@ -5,82 +5,104 @@ let currentSearchFilter = { role: '', username: '' };
 async function renderUserManagement() {
     const content = document.getElementById('content-area');
     
-    // مسیریابی صفحات
-    if (adminUserView === 'create') return renderCreateUserForm(content);
-    if (adminUserView === 'edit') return renderEditUserForm(content, activityTargetUser);
-    if (adminUserView === 'profile') return renderUserProfile(content, activityTargetUser);
+    try {
+        if (adminUserView === 'create') return renderCreateUserForm(content);
+        if (adminUserView === 'edit') return renderEditUserForm(content, activityTargetUser);
+        if (adminUserView === 'profile') {
+            content.innerHTML = `<p style="text-align:center; padding:20px;">در حال بارگذاری پروفایل...</p>`;
+            return await renderUserProfile(content, activityTargetUser);
+        }
 
-    // حالت لیست کاربران
-    const users = await AdminAPI.getUsers();
+        // حالت لیست کاربران
+        const users = await AdminAPI.getUsers();
 
-    let filteredUsers = users.filter(u => {
-        const matchRole = currentSearchFilter.role ? u.role === currentSearchFilter.role : true;
-        const matchUsername = currentSearchFilter.username ? (u.username.includes(currentSearchFilter.username) || (u.firstName && u.firstName.includes(currentSearchFilter.username)) || (u.companyName && u.companyName.includes(currentSearchFilter.username))) : true;
-        return matchRole && matchUsername;
-    });
+        let filteredUsers = users.filter(u => {
+            const matchRole = currentSearchFilter.role ? u.role === currentSearchFilter.role : true;
+            const matchUsername = currentSearchFilter.username ? 
+                (u.username.includes(currentSearchFilter.username) || 
+                (u.firstName && u.firstName.includes(currentSearchFilter.username)) || 
+                (u.lastName && u.lastName.includes(currentSearchFilter.username)) || 
+                (u.companyName && u.companyName.includes(currentSearchFilter.username))) : true;
+            return matchRole && matchUsername;
+        });
 
-    content.innerHTML = `
-        <div class="card" style="background:#f8f9fa; border-right:4px solid var(--primary);">
-            <h3 style="margin-bottom:15px; color:var(--primary); font-size:14px;">جستجوی پیشرفته</h3>
-            <div class="form-row">
-                <div class="form-col"><div class="form-field"><label>نام کاربری / نام</label><input type="text" id="search_username" class="form-control" value="${currentSearchFilter.username}"></div></div>
-                <div class="form-col">
-                    <div class="form-field">
-                        <label>نقش کاربری</label>
-                        <select id="search_role" class="form-control">
-                            <option value="">همه نقش‌ها</option>
-                            <option value="inspector" ${currentSearchFilter.role === 'inspector' ? 'selected' : ''}>بازرس خط</option>
-                            <option value="expert" ${currentSearchFilter.role === 'expert' ? 'selected' : ''}>کارشناس قطعه</option>
-                            <option value="dept_head" ${currentSearchFilter.role === 'dept_head' ? 'selected' : ''}>مسول بخش</option>
-                            <option value="office_head" ${currentSearchFilter.role === 'office_head' ? 'selected' : ''}>رئیس اداره</option>
-                            <option value="supplier" ${currentSearchFilter.role === 'supplier' ? 'selected' : ''}>سازنده</option>
-                        </select>
+        content.innerHTML = `
+            <div class="card" style="background:#f8f9fa; border-right:4px solid var(--primary);">
+                <h3 style="margin-bottom:15px; color:var(--primary); font-size:14px;">جستجوی پیشرفته</h3>
+                <div class="form-row">
+                    <div class="form-col"><div class="form-field"><label>نام کاربری / نام</label><input type="text" id="search_username" class="form-control" value="${currentSearchFilter.username}"></div></div>
+                    <div class="form-col">
+                        <div class="form-field">
+                            <label>نقش کاربری</label>
+                            <select id="search_role" class="form-control">
+                                <option value="">همه نقش‌ها</option>
+                                <option value="inspector" ${currentSearchFilter.role === 'inspector' ? 'selected' : ''}>بازرس خط</option>
+                                <option value="expert" ${currentSearchFilter.role === 'expert' ? 'selected' : ''}>کارشناس قطعه</option>
+                                <option value="dept_head" ${currentSearchFilter.role === 'dept_head' ? 'selected' : ''}>مسول بخش</option>
+                                <option value="office_head" ${currentSearchFilter.role === 'office_head' ? 'selected' : ''}>رئیس اداره</option>
+                                <option value="supplier" ${currentSearchFilter.role === 'supplier' ? 'selected' : ''}>سازنده</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-primary" onclick="applyUserSearch()">اعمال فیلتر</button>
+                    <button class="btn btn-outline" onclick="resetUserSearch()">حذف فیلترها</button>
+                </div>
             </div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-primary" onclick="applyUserSearch()">اعمال فیلتر</button>
-                <button class="btn btn-outline" onclick="resetUserSearch()">حذف فیلترها</button>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="color:var(--primary); font-size:16px;">لیست کاربران (${filteredUsers.length} نفر)</h2>
+                <button class="btn btn-primary" style="background-color:#4a148c;" onclick="openCreateUserForm()">➕ ایجاد کاربر جدید</button>
             </div>
-        </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="color:var(--primary); font-size:16px;">لیست کاربران (${filteredUsers.length} نفر)</h2>
-            <button class="btn btn-primary" style="background-color:#4a148c;" onclick="openCreateUserForm()">➕ ایجاد کاربر جدید</button>
-        </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead><tr><th>نام کاربری</th><th>نام / شرکت</th><th>نقش</th><th>وضعیت</th><th>عملیات</th></tr></thead>
-                <tbody>
-                    ${filteredUsers.map(u => {
-                        const displayName = u.role === 'supplier' ? u.companyName : `${u.firstName} ${u.lastName}`;
-                        return `
-                        <tr>
-                            <td style="font-family:monospace; font-weight:bold;">${u.username}</td>
-                            <td>${displayName}</td>
-                            <td><span class="badge" style="background:#e1bee7; color:#4a148c;">${roleNames[u.role] || u.role}</span></td>
-                            <td>${u.isFirstLogin ? '<span style="color:#c62828; font-size:11px;">در انتظار تغییر رمز</span>' : '<span style="color:#2e7d32; font-size:11px;">فعال</span>'}</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="btn-icon view" onclick="openUserProfile('${u.username}')">👁️ پروفایل</button>
-                                    <button class="btn-icon edit" onclick="openEditUserForm('${u.username}')">✏️ ویرایش</button>
-                                    <button class="btn-icon delete" onclick="deleteUser('${u.username}')">🗑️ حذف</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `}).join('') || '<tr><td colspan="5" style="text-align:center;">کاربری یافت نشد</td></tr>'}
-                </tbody>
-            </table>
-        </div>
-    `;
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>نام کاربری</th><th>نام / شرکت</th><th>نقش</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                    <tbody>
+                        ${filteredUsers.map(u => {
+                            let displayName = u.username;
+                            if (u.role === 'supplier') displayName = u.companyName || 'شرکت بدون نام';
+                            else displayName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'کارمند بدون نام';
+                            
+                            return `
+                            <tr>
+                                <td style="font-family:monospace; font-weight:bold;">${u.username}</td>
+                                <td>${displayName}</td>
+                                <td><span class="badge" style="background:#e1bee7; color:#4a148c;">${roleNames[u.role] || u.role}</span></td>
+                                <td>${u.isFirstLogin ? '<span style="color:#c62828; font-size:11px;">در انتظار تغییر رمز</span>' : '<span style="color:#2e7d32; font-size:11px;">فعال</span>'}</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn-icon view" onclick="openUserProfile('${u.username}')">👁️ پروفایل</button>
+                                        <button class="btn-icon edit" onclick="openEditUserForm('${u.username}')">✏️ ویرایش</button>
+                                        <button class="btn-icon delete" onclick="deleteUser('${u.username}')">🗑️ حذف</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `}).join('') || '<tr><td colspan="5" style="text-align:center;">کاربری یافت نشد</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch (err) {
+        content.innerHTML = `<div class="alert-box" style="background:#ffebee; color:#c62828;">خطا در بارگذاری لیست: ${err.message}</div>`;
+    }
 }
 
 // --- توابع ناوبری ---
 function applyUserSearch() { currentSearchFilter = { role: document.getElementById('search_role').value, username: document.getElementById('search_username').value.trim() }; renderUserManagement(); }
 function resetUserSearch() { currentSearchFilter = { role: '', username: '' }; renderUserManagement(); }
 function openCreateUserForm() { adminUserView = 'create'; renderUserManagement(); }
-function openUserProfile(username) { activityTargetUser = username; adminUserView = 'profile'; renderUserManagement(); }
+function openUserProfile(username) { 
+    try {
+        console.log("Opening profile for:", username);
+        activityTargetUser = username; 
+        adminUserView = 'profile'; 
+        renderUserManagement(); 
+    } catch(e) {
+        alert("خطا در باز کردن پروفایل: " + e.message);
+    }
+}
 function openEditUserForm(username) { activityTargetUser = username; adminUserView = 'edit'; renderUserManagement(); }
 
 // --- ایجاد کاربر جدید ---
@@ -226,117 +248,132 @@ function deleteUser(username) {
 
 // --- پروفایل کامل و هوشمند (بر اساس نقش) ---
 async function renderUserProfile(content, username) {
-    const users = await AdminAPI.getUsers();
-    const user = users.find(u => u.username === username);
-    if (!user) return content.innerHTML = '<p>کاربر یافت نشد.</p>';
+    try {
+        const users = await AdminAPI.getUsers();
+        const user = users.find(u => u.username === username);
+        if (!user) {
+            content.innerHTML = '<div class="card" style="text-align:center;"><p>کاربر یافت نشد.</p><button class="btn btn-outline" onclick="adminUserView=\'list\'; renderUserManagement();">بازگشت</button></div>';
+            return;
+        }
 
-    const displayName = user.role === 'supplier' ? user.companyName : `${user.firstName} ${user.lastName}`;
-    
-    // دریافت داده‌ها از دیتابیس محلی
-    const defects = await OfflineDB.getDefects();
-    const qans = await OfflineDB.getQANs();
-    const tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || '[]');
-
-    // فیلتر کردن داده‌ها بر اساس کاربر
-    const myDefects = defects.filter(d => d.createdBy === username);
-    const myQANs = qans.filter(q => q.createdBy === username);
-
-    // ساخت نمودار ۷ روز اخیر
-    const chartData = getLast7DaysData(myDefects, myQANs, user.role);
-
-    // محاسبه آمار بر اساس نقش
-    let stats = [];
-    if (user.role === 'inspector') {
-        stats = [
-            { label: 'کل ایرادات ثبت‌شده', value: myDefects.length },
-            { label: 'ایرادات در حال پیگیری', value: myDefects.filter(d => d.status !== 'closed').length },
-            { label: 'ایرادات رفع‌شده', value: myDefects.filter(d => d.status === 'closed').length }
-        ];
-    } else if (user.role === 'expert') {
-        stats = [
-            { label: 'اخطارهای صادرشده', value: myQANs.length },
-            { label: 'اخطارهای تایید شده', value: myQANs.filter(q => q.status === 'approved').length },
-            { label: 'اخطارهای رد شده', value: myQANs.filter(q => q.status === 'rejected').length }
-        ];
-    } else if (user.role === 'dept_head' || user.role === 'office_head') {
-        stats = [
-            { label: 'تاییدیه‌های صادرشده', value: myQANs.filter(q => q.status === 'approved').length },
-            { label: 'ردیه‌های صادرشده', value: myQANs.filter(q => q.status === 'rejected').length }
-        ];
-    } else if (user.role === 'supplier') {
-        stats = [
-            { label: 'اخطارهای دریافتی', value: qans.length },
-            { label: 'پاسخ‌های 8D ارسالی', value: 2 } // فرضی برای تست
-        ];
-    }
-
-    content.innerHTML = `
-        <div style="margin-bottom:15px;"><button class="btn btn-outline" onclick="adminUserView='list'; renderUserManagement();">← بازگشت به لیست</button></div>
+        // گرفتن نام نمایشی با مدیریت خطای احتمالی
+        let displayName = user.username;
+        if (user.role === 'supplier') displayName = user.companyName || 'شرکت بدون نام';
+        else displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'کارمند بدون نام';
         
-        <!-- هدر پروفایل -->
-        <div class="profile-header-card">
-            <div class="profile-avatar">${displayName.charAt(0)}</div>
-            <div class="profile-details">
-                <h2>${displayName}</h2>
-                <p>کد پرسنلی / نام کاربری: <b>${user.username}</b></p>
-                <p>وضعیت: ${user.isFirstLogin ? '⚠️ نیازمند تغییر رمز' : '✅ فعال'}</p>
-                <span class="profile-badge">${roleNames[user.role] || user.role}</span>
-            </div>
-        </div>
+        // گرفتن حرف اول برای آواتار
+        const firstChar = displayName ? displayName.charAt(0) : 'U';
 
-        <!-- آمار بر اساس نقش -->
-        <div class="stats-grid">
-            ${stats.map(s => `
-                <div class="stat-card">
-                    <div class="stat-val">${s.value}</div>
-                    <div class="stat-lbl">${s.label}</div>
+        // دریافت داده‌ها
+        const defects = await OfflineDB.getDefects();
+        const qans = await OfflineDB.getQANs();
+        
+        let tasks = [];
+        try { tasks = JSON.parse(localStorage.getItem(`tasks_${username}`)) || []; } catch(e) { tasks = []; }
+
+        // فیلتر کردن داده‌ها
+        const myDefects = defects.filter(d => d.createdBy === username);
+        const myQANs = qans.filter(q => q.createdBy === username);
+
+        const chartData = getLast7DaysData(myDefects, myQANs, user.role);
+
+        let stats = [];
+        if (user.role === 'inspector') {
+            stats = [
+                { label: 'کل ایرادات ثبت‌شده', value: myDefects.length },
+                { label: 'ایرادات در حال پیگیری', value: myDefects.filter(d => d.status !== 'closed').length },
+                { label: 'ایرادات رفع‌شده', value: myDefects.filter(d => d.status === 'closed').length }
+            ];
+        } else if (user.role === 'expert') {
+            stats = [
+                { label: 'اخطارهای صادرشده', value: myQANs.length },
+                { label: 'اخطارهای تایید شده', value: myQANs.filter(q => q.status === 'approved').length },
+                { label: 'اخطارهای رد شده', value: myQANs.filter(q => q.status === 'rejected').length }
+            ];
+        } else if (user.role === 'dept_head' || user.role === 'office_head') {
+            stats = [
+                { label: 'تاییدیه‌های صادرشده', value: myQANs.filter(q => q.status === 'approved').length },
+                { label: 'ردیه‌های صادرشده', value: myQANs.filter(q => q.status === 'rejected').length }
+            ];
+        } else if (user.role === 'supplier') {
+            stats = [
+                { label: 'اخطارهای دریافتی', value: qans.length },
+                { label: 'پاسخ‌های 8D ارسالی', value: 0 } 
+            ];
+        }
+
+        content.innerHTML = `
+            <div style="margin-bottom:15px;"><button class="btn btn-outline" onclick="adminUserView='list'; renderUserManagement();">← بازگشت به لیست</button></div>
+            
+            <div class="profile-header-card">
+                <div class="profile-avatar">${firstChar}</div>
+                <div class="profile-details">
+                    <h2>${displayName}</h2>
+                    <p>کد پرسنلی / نام کاربری: <b>${user.username}</b></p>
+                    <p>وضعیت: ${user.isFirstLogin ? '⚠️ نیازمند تغییر رمز' : '✅ فعال'}</p>
+                    <span class="profile-badge">${roleNames[user.role] || user.role}</span>
                 </div>
-            `).join('')}
-        </div>
+            </div>
 
-        <!-- نمودار فعالیت ۷ روز اخیر -->
-        <div class="chart-wrap">
-            <h3 style="font-size:14px; color:#4a148c; margin-bottom:15px;">📈 نمودار فعالیت ۷ روز اخیر</h3>
-            <div class="chart-area">
-                ${chartData.map(d => `
-                    <div class="chart-column">
-                        <div class="chart-bar ${d.colorClass}" style="height: ${d.percent}%;">
-                            <span class="chart-val">${d.count}</span>
-                        </div>
-                        <span class="chart-lbl">${d.dayName}</span>
+            <div class="stats-grid">
+                ${stats.map(s => `
+                    <div class="stat-card">
+                        <div class="stat-val">${s.value}</div>
+                        <div class="stat-lbl">${s.label}</div>
                     </div>
                 `).join('')}
             </div>
-        </div>
 
-        <!-- جدول تسک‌ها -->
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 class="card-title" style="border:none; margin:0; padding:0;">📋 تسک‌های کاربر</h3>
-                <button class="btn btn-sm btn-primary" style="background:#4a148c;" onclick="openAddTaskModal('${username}')">➕ تسک جدید</button>
+            <div class="chart-wrap">
+                <h3 style="font-size:14px; color:#4a148c; margin-bottom:15px;">📈 نمودار فعالیت ۷ روز اخیر</h3>
+                <div class="chart-area">
+                    ${chartData.map(d => `
+                        <div class="chart-column">
+                            <div class="chart-bar ${d.colorClass}" style="height: ${d.percent}%;">
+                                <span class="chart-val">${d.count}</span>
+                            </div>
+                            <span class="chart-lbl">${d.dayName}</span>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
-            
-            <div class="table-wrapper">
-                <table>
-                    <thead><tr><th>شرح تسک</th><th>تاریخ ثبت</th><th>وضعیت</th><th>عملیات</th></tr></thead>
-                    <tbody>
-                        ${tasks.map((t, i) => `
-                            <tr>
-                                <td>${t.desc}</td>
-                                <td>${t.date}</td>
-                                <td>
-                                    <span class="task-badge ${t.status === 'done' ? 'task-done' : 'task-pending'}" onclick="toggleTaskStatus('${username}', ${i})">
-                                        ${t.status === 'done' ? '✅ انجام شده' : '⏳ در انتظار'}
-                                    </span>
-                                </td>
-                                <td><button class="btn-icon delete" onclick="deleteTask('${username}', ${i})">حذف</button></td>
-                            </tr>
-                        `).join('') || '<tr><td colspan="4" style="text-align:center;">تسکی ثبت نشده است</td></tr>'}
-                    </tbody>
-                </table>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 class="card-title" style="border:none; margin:0; padding:0;">📋 تسک‌های کاربر</h3>
+                    <button class="btn btn-sm btn-primary" style="background:#4a148c;" onclick="openAddTaskModal('${username}')">➕ تسک جدید</button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>شرح تسک</th><th>تاریخ ثبت</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                        <tbody>
+                            ${tasks.map((t, i) => `
+                                <tr>
+                                    <td>${t.desc}</td>
+                                    <td>${t.date}</td>
+                                    <td>
+                                        <span class="task-badge ${t.status === 'done' ? 'task-done' : 'task-pending'}" onclick="toggleTaskStatus('${username}', ${i})">
+                                            ${t.status === 'done' ? '✅ انجام شده' : '⏳ در انتظار'}
+                                        </span>
+                                    </td>
+                                    <td><button class="btn-icon delete" onclick="deleteTask('${username}', ${i})">حذف</button></td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="4" style="text-align:center;">تسکی ثبت نشده است</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    } catch (error) {
+        content.innerHTML = `
+            <div class="card" style="color:red;">
+                <h3>خطا در بارگذاری پروفایل</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-outline" onclick="adminUserView='list'; renderUserManagement();">بازگشت</button>
+            </div>
+        `;
+    }
 }
 
 // --- محاسبه داده‌های نمودار ۷ روز اخیر ---
@@ -364,7 +401,7 @@ function getLast7DaysData(defects, qans, role) {
 
     return result.map(x => ({
         ...x,
-        percent: Math.max((x.count / maxCount) * 100, 4), // حداقل ۴ درصد برای دیده شدن
+        percent: Math.max((x.count / maxCount) * 100, 4),
         colorClass: role === 'inspector' ? '' : (role === 'expert' ? 'orange' : 'green')
     }));
 }
@@ -385,7 +422,9 @@ function saveNewTask(username) {
     const desc = document.getElementById('new_task_desc').value.trim();
     if(!desc) return Utils.toast('شرح تسک الزامی است', 'error');
 
-    let tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || '[]');
+    let tasks = [];
+    try { tasks = JSON.parse(localStorage.getItem(`tasks_${username}`)) || []; } catch(e) { tasks = []; }
+    
     tasks.unshift({ desc, date: new Date().toLocaleDateString('fa-IR'), status: 'pending' });
     localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
 
@@ -395,15 +434,21 @@ function saveNewTask(username) {
 }
 
 function toggleTaskStatus(username, index) {
-    let tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || '[]');
-    tasks[index].status = tasks[index].status === 'done' ? 'pending' : 'done';
-    localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
-    renderUserProfile(document.getElementById('content-area'), username);
+    let tasks = [];
+    try { tasks = JSON.parse(localStorage.getItem(`tasks_${username}`)) || []; } catch(e) { return; }
+    
+    if(tasks[index]) {
+        tasks[index].status = tasks[index].status === 'done' ? 'pending' : 'done';
+        localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
+        renderUserProfile(document.getElementById('content-area'), username);
+    }
 }
 
 function deleteTask(username, index) {
     if(!confirm('حذف این تسک؟')) return;
-    let tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || '[]');
+    let tasks = [];
+    try { tasks = JSON.parse(localStorage.getItem(`tasks_${username}`)) || []; } catch(e) { return; }
+    
     tasks.splice(index, 1);
     localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
     renderUserProfile(document.getElementById('content-area'), username);
