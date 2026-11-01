@@ -1,32 +1,42 @@
 let currentImageBase64 = null;
-let currentReviewCode = null; // برای نگه داشتن کد ایراد در فرم‌های مودال
 
-// ==================== ثبت ایراد ====================
+// ==================== ثبت ایراد (بازرس) ====================
 function renderNewDefectForm() {
     const content = document.getElementById('content-area');
     currentImageBase64 = null;
+    const titles = JSON.parse(localStorage.getItem('iqdws_defect_titles') || '[]');
 
     content.innerHTML = `
         <div class="card">
-            <h2 class="card-title">ثبت ایراد جدید (حالت آفلاین)</h2>
+            <h2 class="card-title">ثبت ایراد جدید (بازرس خط)</h2>
             <form id="defect-form" onsubmit="submitDefectForm(event)">
                 <div class="form-row">
-                    <div class="form-col"><div class="form-field"><label>عنوان ایراد <span class="req">*</span></label><input type="text" id="d_title" class="form-control" required></div></div>
+                    <div class="form-col">
+                        <div class="form-field">
+                            <label>عنوان ایراد <span class="req">*</span></label>
+                            <select id="d_title" class="form-control" required>
+                                <option value="">— انتخاب کنید —</option>
+                                ${titles.map(t => `<option value="${t}">${t}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
                     <div class="form-col"><div class="form-field"><label>شماره بدنه (VIN) <span class="req">*</span></label><input type="text" id="d_vin" class="form-control" required></div></div>
                 </div>
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-field">
-                            <label>شدت ایراد</label>
+                            <label>شدت ایراد <span class="req">*</span></label>
                             <select id="d_severity" class="form-control" required>
-                                <option value="critical">بحرانی</option>
-                                <option value="major">ماژور</option>
-                                <option value="minor">مینور</option>
-                                <option value="cosmetic">کازمتیک</option>
+                                <option value="">— انتخاب کنید —</option>
+                                <option value="S">S (ایمنی/مکانیک - بسیار بالا)</option>
+                                <option value="P">P (پارک خودرو - بالا)</option>
+                                <option value="A">A (مهم و تکراری)</option>
+                                <option value="B">B (ظاهری/عملکردی - نیازمند ۳ قطعه)</option>
+                                <option value="C">C (ظاهری/طراحی - کم)</option>
                             </select>
                         </div>
                     </div>
-                    <div class="form-col"><div class="form-field"><label>تعداد خودرو</label><input type="number" id="d_qty" class="form-control" min="1" required></div></div>
+                    <div class="form-col"><div class="form-field"><label>تعداد خودرو/قطعه درگیر <span class="req">*</span></label><input type="number" id="d_qty" class="form-control" min="1" required></div></div>
                 </div>
                 <div class="form-field"><label>شرح کامل</label><textarea id="d_desc" class="form-control"></textarea></div>
                 <div class="form-field" style="background:#f9f9f9; padding:15px; border-radius:8px; border:1px dashed #ccc;">
@@ -45,7 +55,7 @@ function handleImageUpload(event) {
     if (!file) return;
     ImageUtils.openCropModal(file, (base64) => {
         currentImageBase64 = base64;
-        document.getElementById('image-preview').innerHTML = `✅ عکس آماده شد (حجم: ${Math.round(base64.length / 1024)} کیلوبایت)`;
+        document.getElementById('image-preview').innerHTML = `✅ عکس آماده شد`;
     });
 }
 
@@ -70,7 +80,7 @@ async function submitDefectForm(e) {
         createdBy: session.username,
         createdByName: session.displayName,
         createdAt: new Date().toISOString(),
-        reviewSteps: [] // آرایه‌ای برای ذخیره مراحل بررسی کارشناس
+        reviewSteps: []
     };
 
     await OfflineDB.saveDefect(defectData);
@@ -80,11 +90,12 @@ async function submitDefectForm(e) {
     navigate('defects');
 }
 
-// ==================== لیست ایرادها ====================
+// ==================== لیست ایرادها (بازرس و کارشناس) ====================
 async function renderDefectList() {
     const content = document.getElementById('content-area');
-    content.innerHTML = `<p>در حال خواندن از حافظه...</p>`;
-    const role = JSON.parse(localStorage.getItem('iqdws_session')).roleId;
+    content.innerHTML = `<p>در حال خواندن...</p>`;
+    const session = JSON.parse(localStorage.getItem('iqdws_session'));
+    const role = session.roleId;
     
     try {
         const defects = await OfflineDB.getDefects();
@@ -93,19 +104,20 @@ async function renderDefectList() {
                 <h2 class="card-title">لیست ایرادها</h2>
                 <div class="table-wrapper">
                     <table>
-                        <thead><tr><th>کد ایراد</th><th>عنوان</th><th>شدت</th><th>ثبت‌کننده</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                        <thead><tr><th>کد</th><th>عنوان</th><th>شدت</th><th>ثبت‌کننده</th><th>وضعیت</th><th>عملیات</th></tr></thead>
                         <tbody>
                             ${defects.map(d => `
                                 <tr>
                                     <td style="font-family:monospace; font-weight:bold; color:var(--primary);">${d.defectCode}</td>
                                     <td>${d.title}</td>
                                     <td><span class="badge sev-${d.severity}">${d.severity}</span></td>
-                                    <td>${d.createdByName} <span style="font-size:10px; color:#888;">(${d.createdBy})</span></td>
+                                    <td>${d.createdByName}</td>
                                     <td><span class="badge status-${d.status}">${d.status}</span></td>
                                     <td>
                                         <button class="btn btn-sm btn-outline" onclick="navigate('defect-detail', '${d.defectCode}')">مشاهده</button>
                                         ${role === 'expert' ? `<button class="btn btn-sm btn-primary" onclick="navigate('expert-defect-detail', '${d.defectCode}')">ورود (بررسی)</button>` : ''}
-                                        ${(role === 'expert' || role === 'dept_head') && d.status === 'registered' ? `<button class="btn btn-sm btn-warning" onclick="openQANForm('${d.defectCode}')">صدور اخطار</button>` : ''}
+                                        ${(role === 'inspector') ? `<button class="btn btn-sm btn-warning" onclick="navigate('inspector-followup', '${d.defectCode}')">پیگیری ایراد</button>` : ''}
+                                        ${role === 'inspector' ? `<button class="btn btn-sm btn-success" onclick="openClaimModal('${d.defectCode}')">ثبت کلیم</button>` : ''}
                                     </td>
                                 </tr>
                             `).join('') || '<tr><td colspan="6" style="text-align:center;">ایرادی یافت نشد</td></tr>'}
@@ -114,211 +126,105 @@ async function renderDefectList() {
                 </div>
             </div>
         `;
-    } catch (e) {
-        content.innerHTML = `<p style="color:red;">خطا در خواندن حافظه.</p>`;
-    }
+    } catch (e) { content.innerHTML = `<p style="color:red;">خطا.</p>`; }
 }
 
-// ==================== مشاهده جزئیات (ساده) ====================
-async function renderDefectDetail(code) {
+// ==================== مشاهده پیگیری (فقط خواندنی برای بازرس) ====================
+async function renderInspectorFollowup(code) {
     const content = document.getElementById('content-area');
     const d = await OfflineDB.getDefectByCode(code);
     if(!d) return content.innerHTML = '<p>یافت نشد.</p>';
 
-    content.innerHTML = `
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:15px;">
-                <h2 class="card-title" style="margin:0; border:none;">جزئیات ایراد</h2>
-                <span style="font-family:monospace; font-size:18px; font-weight:bold; color:var(--primary); background:#e3f2fd; padding:5px 15px; border-radius:8px;">${d.defectCode}</span>
-            </div>
-            <div class="detail-row"><span class="lbl">عنوان</span><span class="val">${d.title}</span></div>
-            <div class="detail-row"><span class="lbl">VIN</span><span class="val">${d.vin}</span></div>
-            <div class="detail-row"><span class="lbl">شدت</span><span class="val"><span class="badge sev-${d.severity}">${d.severity}</span></span></div>
-            <div class="detail-row"><span class="lbl">تعداد</span><span class="val">${d.qty}</span></div>
-            <div class="detail-row"><span class="lbl">شرح</span><span class="val">${d.desc || '—'}</span></div>
-            <div class="detail-row"><span class="lbl">ثبت‌کننده</span><span class="val">${d.createdByName} (${d.createdBy})</span></div>
-            <div class="detail-row"><span class="lbl">تاریخ ثبت</span><span class="val">${Utils.formatDate(d.createdAt)}</span></div>
-            ${d.imageBase64 ? `<div style="margin-top:15px;"><img src="${d.imageBase64}" style="max-width:100%; border-radius:8px;"></div>` : ''}
-            <div style="margin-top:20px;"><button class="btn btn-outline" onclick="navigate('defects')">← بازگشت به لیست</button></div>
-        </div>
-    `;
-}
-
-// ==================== صفحه اختصاصی کارشناس (بررسی ایراد) ====================
-async function renderExpertDefectDetail(code) {
-    const content = document.getElementById('content-area');
-    const d = await OfflineDB.getDefectByCode(code);
-    if(!d) return content.innerHTML = '<p>یافت نشد.</p>';
-
-    // دریافت اطلاعات اخطار و 8D مرتبط
     const qans = await OfflineDB.getQANs();
     const relatedQAN = qans.find(q => q.defectCode === code);
-    let related8D = null;
-    if (relatedQAN) {
-        related8D = await OfflineDB.get8DByQAN(relatedQAN.qanId);
-    }
-
-    // اگر آرایه مراحل وجود نداشت، ایجاد کن
-    if (!d.reviewSteps) d.reviewSteps = [];
+    const claims = await OfflineDB.getClaimsByDefect(code);
 
     content.innerHTML = `
-        <div style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn btn-outline" onclick="navigate('defects')">← بازگشت به لیست</button>
-            <div style="font-family:monospace; font-size:18px; font-weight:bold; color:var(--primary); background:#e3f2fd; padding:5px 15px; border-radius:8px;">کد ایراد: ${d.defectCode}</div>
+        <div style="margin-bottom:15px; display:flex; justify-content:space-between;">
+            <button class="btn btn-outline" onclick="navigate('defects')">← بازگشت</button>
+            <h2 style="color:var(--primary); margin:0;">پیگیری ایراد ${d.defectCode}</h2>
         </div>
 
-        <!-- بخش ۱: اطلاعات ثبت‌کننده و ایراد -->
-        <div class="card" style="border-top: 4px solid var(--primary);">
-            <h3 class="card-title" style="color:var(--primary);">۱. اطلاعات اولیه (ثبت‌شده توسط بازرس)</h3>
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="detail-row"><span class="lbl">عنوان ایراد</span><span class="val" style="font-weight:bold;">${d.title}</span></div>
-                    <div class="detail-row"><span class="lbl">شماره بدنه (VIN)</span><span class="val" style="font-family:monospace;">${d.vin}</span></div>
-                    <div class="detail-row"><span class="lbl">شدت ایراد</span><span class="val"><span class="badge sev-${d.severity}">${d.severity}</span></span></div>
-                    <div class="detail-row"><span class="lbl">تعداد خودرو درگیر</span><span class="val">${d.qty}</span></div>
-                </div>
-                <div class="form-col">
-                    <div class="detail-row"><span class="lbl">ثبت‌کننده</span><span class="val">${d.createdByName} (${d.createdBy})</span></div>
-                    <div class="detail-row"><span class="lbl">تاریخ ثبت</span><span class="val">${Utils.formatDate(d.createdAt)}</span></div>
-                    <div class="detail-row"><span class="lbl">شرح کامل</span><span class="val">${d.desc || '—'}</span></div>
-                    ${d.imageBase64 ? `<img src="${d.imageBase64}" style="max-width:100%; border-radius:8px; margin-top:10px; max-height:150px;">` : ''}
-                </div>
-            </div>
-        </div>
-
-        <!-- بخش ۲: مراحل بررسی -->
-        <div class="card" style="border-top: 4px solid var(--warning);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 class="card-title" style="border:none; margin:0; padding:0; color:var(--warning);">۲. مراحل بررسی و مستندات</h3>
-                <button class="btn btn-sm btn-warning" onclick="openAddStepModal('${d.defectCode}')">➕ افزودن مرحله بررسی</button>
-            </div>
-            
+        <div class="card">
+            <h3 class="card-title">۱. مراحل بررسی کارشناس قطعه</h3>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>تاریخ</th><th>توضیحات بررسی / مستندات</th><th>ثبت‌کننده</th><th>عملیات</th></tr></thead>
+                    <thead><tr><th>تاریخ</th><th>توضیحات</th><th>ثبت‌کننده</th></tr></thead>
                     <tbody>
-                        ${d.reviewSteps.map((step, index) => `
-                            <tr>
-                                <td style="white-space:nowrap;">${step.date}</td>
-                                <td>${step.desc}</td>
-                                <td>${step.by}</td>
-                                <td>
-                                    <button class="btn-icon edit" onclick="openEditStepModal('${d.defectCode}', ${index})">✏️ ویرایش</button>
-                                    <button class="btn-icon delete" onclick="deleteReviewStep('${d.defectCode}', ${index})">🗑️ حذف</button>
-                                </td>
-                            </tr>
-                        `).join('') || '<tr><td colspan="4" style="text-align:center; color:#888;">مرحله‌ای ثبت نشده است.</td></tr>'}
+                        ${(d.reviewSteps || []).map(step => `
+                            <tr><td>${step.date}</td><td>${step.desc}</td><td>${step.by}</td></tr>
+                        `).join('') || '<tr><td colspan="3" style="text-align:center;">مرحله‌ای ثبت نشده است.</td></tr>'}
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- بخش ۳: اطلاعات SLA، اخطار و 8D -->
-        <div class="card" style="border-top: 4px solid var(--danger);">
-            <h3 class="card-title" style="color:var(--danger);">۳. اطلاعات SLA و پاسخ سازنده</h3>
-            
-            <div class="form-row">
-                <!-- ستون اخطار (QAN) -->
-                <div class="form-col">
-                    <h4 style="color:#c62828; margin-bottom:10px;">⚠️ اخطار کیفی (QAN)</h4>
-                    ${relatedQAN ? `
-                        <div class="detail-row"><span class="lbl">شناسه اخطار</span><span class="val">${relatedQAN.qanId}</span></div>
-                        <div class="detail-row"><span class="lbl">سطح اخطار</span><span class="val">${relatedQAN.level}</span></div>
-                        <div class="detail-row"><span class="lbl">جریمه (SLA)</span><span class="val" style="color:#c62828; font-weight:bold;">${relatedQAN.penalty.toLocaleString()} ریال</span></div>
-                        <div class="detail-row"><span class="lbl">وضعیت</span><span class="val"><span class="badge status-${relatedQAN.status}">${relatedQAN.status}</span></span></div>
-                        ${relatedQAN.rejectReason ? `<div class="detail-row"><span class="lbl">دلیل رد</span><span class="val" style="color:#c62828;">${relatedQAN.rejectReason}</span></div>` : ''}
-                    ` : `
-                        <div style="padding:15px; background:#fff3e0; border-radius:8px; text-align:center;">
-                            <p style="color:#e65100; font-size:12px;">هنوز اخطار کیفی برای این ایراد صادر نشده است.</p>
-                            <button class="btn btn-sm btn-warning" style="margin-top:10px;" onclick="openQANForm('${d.defectCode}')">صدور اخطار کیفی</button>
-                        </div>
-                    `}
-                </div>
+        <div class="card">
+            <h3 class="card-title">۲. اطلاعات اخطار و 8D</h3>
+            ${relatedQAN ? `
+                <div class="detail-row"><span class="lbl">شناسه اخطار</span><span class="val">${relatedQAN.qanId}</span></div>
+                <div class="detail-row"><span class="lbl">وضعیت اخطار</span><span class="val"><span class="badge status-${relatedQAN.status}">${relatedQAN.status}</span></span></div>
+                <div class="detail-row"><span class="lbl">جریمه (SLA)</span><span class="val" style="color:red;">${relatedQAN.penalty.toLocaleString()} ریال</span></div>
+            ` : '<p style="color:#666;">اخطاری صادر نشده است.</p>'}
+        </div>
 
-                <!-- ستون پاسخ سازنده (8D) -->
-                <div class="form-col">
-                    <h4 style="color:#2e7d32; margin-bottom:10px;">🛠️ پاسخ سازنده (8D)</h4>
-                    ${related8D ? `
-                        <div class="detail-row"><span class="lbl">تیم بررسی</span><span class="val">${related8D.d1_team || '—'}</span></div>
-                        <div class="detail-row"><span class="lbl">ریشه یابی (D4)</span><span class="val">${related8D.d4_root_cause || '—'}</span></div>
-                        <div class="detail-row"><span class="lbl">اقدام اصلاحی (D5)</span><span class="val">${related8D.d5_capa || '—'}</span></div>
-                    ` : `
-                        <div style="padding:15px; background:#e8f5e9; border-radius:8px; text-align:center;">
-                            <p style="color:#2e7d32; font-size:12px;">سازنده هنوز پاسخی ارسال نکرده است.</p>
-                        </div>
-                    `}
-                </div>
+        <div class="card">
+            <h3 class="card-title">۳. کارت‌های کلیم صادرشده</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>شماره کلیم</th><th>قطعه</th><th>تعداد</th><th>دلیل</th><th>VINها</th></tr></thead>
+                    <tbody>
+                        ${claims.map(c => `
+                            <tr>
+                                <td>${c.claimId}</td>
+                                <td>${c.partName} (${c.partNo})</td>
+                                <td>${c.qty}</td>
+                                <td>${c.reason}</td>
+                                <td>${c.vins}</td>
+                            </tr>
+                        `).join('') || '<tr><td colspan="5" style="text-align:center;">کلیمی ثبت نشده است.</td></tr>'}
+                    </tbody>
+                </table>
             </div>
         </div>
     `;
 }
 
-// ==================== مدیریت مودال مراحل بررسی ====================
-function openAddStepModal(defectCode) {
-    currentReviewCode = defectCode;
+// ==================== فرم ثبت کارت کلیم ====================
+function openClaimModal(defectCode) {
     Utils.openModal(`
-        <h3 style="color:var(--warning); margin-bottom:15px;">افزودن مرحله بررسی</h3>
-        <div class="form-field">
-            <label>شرح بررسی / مستندات</label>
-            <textarea id="step_desc" class="form-control" placeholder="مثال: بررسی خودرو در پارکینگ، ارسال عکس به تأمین‌کننده..." required></textarea>
-        </div>
-        <button class="btn btn-warning" style="width:100%; margin-top:10px;" onclick="saveReviewStep('${defectCode}')">ثبت مرحله</button>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">ثبت کارت کلیم قطعه</h3>
+        <input type="hidden" id="c_defectCode" value="${defectCode}">
+        <div class="form-field"><label>شماره کارت کلیم <span class="req">*</span></label><input type="text" id="c_claimId" class="form-control" required></div>
+        <div class="form-field"><label>شماره فنی قطعه (Part No) <span class="req">*</span></label><input type="text" id="c_partNo" class="form-control" required></div>
+        <div class="form-field"><label>نام قطعه <span class="req">*</span></label><input type="text" id="c_partName" class="form-control" required></div>
+        <div class="form-field"><label>سازنده قطعه <span class="req">*</span></label><input type="text" id="c_supplier" class="form-control" required></div>
+        <div class="form-field"><label>تعداد کلیم <span class="req">*</span></label><input type="number" id="c_qty" class="form-control" min="1" required></div>
+        <div class="form-field"><label>دلیل کلیم <span class="req">*</span></label><textarea id="c_reason" class="form-control" required></textarea></div>
+        <div class="form-field"><label>VIN خودروهای درگیر (با کاما جدا کنید) <span class="req">*</span></label><textarea id="c_vins" class="form-control" required></textarea></div>
+        <button class="btn btn-success" style="width:100%; margin-top:10px;" onclick="saveClaim()">ثبت کلیم</button>
     `);
 }
 
-async function saveReviewStep(defectCode) {
-    const desc = document.getElementById('step_desc').value.trim();
-    if(!desc) return Utils.toast('توضیحات الزامی است', 'error');
-
-    const d = await OfflineDB.getDefectByCode(defectCode);
+async function saveClaim() {
     const session = JSON.parse(localStorage.getItem('iqdws_session'));
-    
-    if(!d.reviewSteps) d.reviewSteps = [];
-    
-    d.reviewSteps.push({
-        date: new Date().toLocaleDateString('fa-IR') + ' ' + new Date().toLocaleTimeString('fa-IR', {hour: '2-digit', minute:'2-digit'}),
-        desc: desc,
-        by: session.displayName
-    });
+    const claimData = {
+        claimId: document.getElementById('c_claimId').value.trim(),
+        defectCode: document.getElementById('c_defectCode').value,
+        partNo: document.getElementById('c_partNo').value.trim(),
+        partName: document.getElementById('c_partName').value.trim(),
+        supplier: document.getElementById('c_supplier').value.trim(),
+        qty: parseInt(document.getElementById('c_qty').value),
+        reason: document.getElementById('c_reason').value.trim(),
+        vins: document.getElementById('c_vins').value.trim(),
+        createdBy: session.username,
+        createdAt: new Date().toISOString()
+    };
 
-    await OfflineDB.saveDefect(d);
+    if(!claimData.claimId || !claimData.partNo || !claimData.qty) return Utils.toast('اطلاعات ناقص است', 'error');
+
+    await OfflineDB.saveClaim(claimData);
+    Utils.toast('کارت کلیم ثبت شد');
     Utils.closeModal();
-    Utils.toast('مرحله بررسی اضافه شد');
-    renderExpertDefectDetail(defectCode);
-}
-
-async function openEditStepModal(defectCode, index) {
-    const d = await OfflineDB.getDefectByCode(defectCode);
-    const step = d.reviewSteps[index];
-    
-    Utils.openModal(`
-        <h3 style="color:var(--warning); margin-bottom:15px;">ویرایش مرحله بررسی</h3>
-        <div class="form-field">
-            <label>شرح بررسی</label>
-            <textarea id="edit_step_desc" class="form-control" required>${step.desc}</textarea>
-        </div>
-        <button class="btn btn-warning" style="width:100%; margin-top:10px;" onclick="updateReviewStep('${defectCode}', ${index})">ذخیره تغییرات</button>
-    `);
-}
-
-async function updateReviewStep(defectCode, index) {
-    const desc = document.getElementById('edit_step_desc').value.trim();
-    if(!desc) return Utils.toast('توضیحات الزامی است', 'error');
-
-    const d = await OfflineDB.getDefectByCode(defectCode);
-    d.reviewSteps[index].desc = desc;
-    
-    await OfflineDB.saveDefect(d);
-    Utils.closeModal();
-    Utils.toast('تغییرات ذخیره شد');
-    renderExpertDefectDetail(defectCode);
-}
-
-async function deleteReviewStep(defectCode, index) {
-    if(!confirm('آیا از حذف این مرحله مطمئن هستید؟')) return;
-    const d = await OfflineDB.getDefectByCode(defectCode);
-    d.reviewSteps.splice(index, 1);
-    await OfflineDB.saveDefect(d);
-    Utils.toast('مرحله حذف شد');
-    renderExpertDefectDetail(defectCode);
+    navigate('defects');
 }
