@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سامانه مادر | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/forms.css">
-    <link rel="stylesheet" href="assets/css/tables.css">
-    <link rel="stylesheet" href="assets/css/analytics.css">
+    <link rel="stylesheet" href="assets/css/main.css?v=20">
+    <link rel="stylesheet" href="assets/css/components.css?v=20">
+    <link rel="stylesheet" href="assets/css/forms.css?v=20">
+    <link rel="stylesheet" href="assets/css/tables.css?v=20">
+    <link rel="stylesheet" href="assets/css/analytics.css?v=20">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
@@ -19,9 +19,7 @@
                 🏭 سامانه مادر IQDWS
             </div>
             <div class="header-user">
-                <button id="sync-btn" class="btn btn-sm" style="background:#2e7d32; color:white; margin-left:15px;" onclick="SyncManager.processQueue()">
-                    ☁️ آپلود
-                </button>
+                <button id="sync-btn" class="btn btn-sm" style="background:#2e7d32; color:white; margin-left:15px;" onclick="SyncManager.processQueue()">☁️ آپلود</button>
                 <span id="user-info" style="font-weight:bold; font-size:13px;"></span>
                 <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
@@ -40,17 +38,17 @@
         </div>
     </div>
 
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/modules/utils.js"></script>
-    <script src="assets/js/modules/offline-db.js"></script>
-    <script src="assets/js/modules/sync-manager.js"></script>
-    <script src="assets/js/modules/image-utils.js"></script>
-    <script src="assets/js/modules/api.js"></script>
-    <script src="assets/js/modules/dashboard.js"></script>
-    <script src="assets/js/modules/defect.js"></script>
-    <script src="assets/js/modules/qan.js"></script>
-    <script src="assets/js/modules/main-analytics.js"></script>
+    <script src="assets/js/config.js?v=20"></script>
+    <script src="assets/js/auth.js?v=20"></script>
+    <script src="assets/js/modules/utils.js?v=20"></script>
+    <script src="assets/js/modules/offline-db.js?v=20"></script>
+    <script src="assets/js/modules/sync-manager.js?v=20"></script>
+    <script src="assets/js/modules/image-utils.js?v=20"></script>
+    <script src="assets/js/modules/api.js?v=20"></script>
+    <script src="assets/js/modules/dashboard.js?v=20"></script>
+    <script src="assets/js/modules/defect.js?v=20"></script>
+    <script src="assets/js/modules/qan.js?v=20"></script>
+    <script src="assets/js/modules/main-analytics.js?v=20"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <script>
@@ -59,10 +57,9 @@
         }
         SyncManager.init();
         
-        const session = checkAuth('main');
-        // نمایش نام و نقش در هدر
+        const session = checkAuth();
         if (session) {
-            document.getElementById('user-info').innerText = `${session.firstName} ${session.lastName} (${session.roleName})`;
+            document.getElementById('user-info').innerText = `${session.displayName} (${session.roleName})`;
         }
 
         function buildMenu() {
@@ -70,7 +67,7 @@
             if (session.roleId === 'inspector') {
                 menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'new-defect', title: 'ثبت ایراد', icon: '➕' }, { id: 'defects', title: 'لیست ایرادها', icon: '📋' }];
             } else if (session.roleId === 'expert') {
-                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'defects', title: 'لیست ایرادها', icon: '📋' }, { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }];
+                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'defects', title: 'لیست ایرادها (بررسی)', icon: '🔍' }, { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }];
             } else if (session.roleId === 'dept_head' || session.roleId === 'office_head') {
                 menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'qans', title: 'تاییدیه اخطارها', icon: '✅' }];
             } else {
@@ -84,7 +81,7 @@
             document.getElementById('menu-overlay').classList.toggle('active');
         }
 
-        function navigate(view) {
+        function navigate(view, param) {
             if(window.innerWidth < 768) toggleMenu();
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${view}`);
@@ -93,11 +90,17 @@
             if(view === 'dashboard') renderDashboard();
             else if(view === 'new-defect') renderNewDefectForm();
             else if(view === 'defects') renderDefectList();
+            else if(view === 'defect-detail') renderDefectDetail(param);
+            else if(view === 'expert-defect-detail') renderExpertDefectDetail(param); // مسیر جدید
             else if(view === 'qans') renderQANList();
             else if(view === 'analytics') renderMainAnalytics();
         }
 
-        window.onload = () => { buildMenu(); navigate('dashboard'); };
+        window.onload = async () => {
+            await OfflineDB.init();
+            buildMenu();
+            navigate('dashboard');
+        };
     </script>
 </body>
 </html>
