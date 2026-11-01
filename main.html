@@ -7,11 +7,12 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b3d6b">
     
-    <link rel="stylesheet" href="assets/css/main.css?v=25">
-    <link rel="stylesheet" href="assets/css/components.css?v=25">
-    <link rel="stylesheet" href="assets/css/forms.css?v=25">
-    <link rel="stylesheet" href="assets/css/tables.css?v=25">
-    <link rel="stylesheet" href="assets/css/analytics.css?v=25">
+    <link rel="stylesheet" href="assets/css/main.css?v=30">
+    <link rel="stylesheet" href="assets/css/components.css?v=30">
+    <link rel="stylesheet" href="assets/css/forms.css?v=30">
+    <link rel="stylesheet" href="assets/css/tables.css?v=30">
+    <link rel="stylesheet" href="assets/css/analytics.css?v=30">
+    <link rel="stylesheet" href="assets/css/admin.css?v=30">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
@@ -42,17 +43,22 @@
     </div>
 
     <!-- Scripts -->
-    <script src="assets/js/config.js?v=25"></script>
-    <script src="assets/js/auth.js?v=25"></script>
-    <script src="assets/js/modules/utils.js?v=25"></script>
-    <script src="assets/js/modules/offline-db.js?v=25"></script>
-    <script src="assets/js/modules/sync-manager.js?v=25"></script>
-    <script src="assets/js/modules/image-utils.js?v=25"></script>
-    <script src="assets/js/modules/api.js?v=25"></script>
-    <script src="assets/js/modules/dashboard.js?v=25"></script>
-    <script src="assets/js/modules/defect.js?v=25"></script>
-    <script src="assets/js/modules/qan.js?v=25"></script>
-    <script src="assets/js/modules/main-analytics.js?v=25"></script>
+    <script src="assets/js/config.js?v=30"></script>
+    <script src="assets/js/auth.js?v=30"></script>
+    <script src="assets/js/modules/utils.js?v=30"></script>
+    <script src="assets/js/modules/offline-db.js?v=30"></script>
+    <script src="assets/js/modules/sync-manager.js?v=30"></script>
+    <script src="assets/js/modules/image-utils.js?v=30"></script>
+    <script src="assets/js/modules/api.js?v=30"></script>
+    <script src="assets/js/modules/dashboard.js?v=30"></script>
+    <script src="assets/js/modules/defect.js?v=30"></script>
+    <script src="assets/js/modules/qan.js?v=30"></script>
+    <script src="assets/js/modules/main-analytics.js?v=30"></script>
+    <!-- ماژول‌های جدید -->
+    <script src="assets/js/modules/search.js?v=30"></script>
+    <script src="assets/js/modules/analysis.js?v=30"></script>
+    <script src="assets/js/modules/operator.js?v=30"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <script>
@@ -72,7 +78,10 @@
                 menu = [
                     { id: 'dashboard', title: 'داشبورد', icon: '📊' }, 
                     { id: 'new-defect', title: 'ثبت ایراد', icon: '➕' }, 
-                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' }
+                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' },
+                    { id: 'search', title: 'جستجو', icon: '🔍' },
+                    { id: 'analysis-request', title: 'درخواست آنالیز', icon: '🧠' },
+                    { id: 'operator-errors', title: 'ایراد اپراتوری', icon: '⚠️' }
                 ];
             } else if (session.roleId === 'expert') {
                 menu = [
@@ -116,13 +125,17 @@
             else if(view === 'defects') renderDefectList();
             else if(view === 'defect-detail') renderDefectDetail(param);
             else if(view === 'expert-defect-detail') renderExpertDefectDetail(param); 
-            else if(view === 'inspector-followup') renderInspectorFollowup(param); // مسیر جدید پیگیری بازرس
+            else if(view === 'inspector-followup') renderInspectorFollowup(param);
             else if(view === 'qans') renderQANList();
             else if(view === 'analytics') renderMainAnalytics();
+            // مسیرهای جدید بازرس
+            else if(view === 'search') renderInspectorSearch();
+            else if(view === 'analysis-request') renderAnalysisRequest();
+            else if(view === 'operator-errors') renderOperatorErrors();
         }
 
         window.onload = async () => {
-            await OfflineDB.init(); // راه‌اندازی دیتابیس محلی
+            await OfflineDB.init();
             buildMenu();
             navigate('dashboard');
         };
