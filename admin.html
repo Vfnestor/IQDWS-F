@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>پنل مدیریت | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css?v=15">
-    <link rel="stylesheet" href="assets/css/components.css?v=15">
-    <link rel="stylesheet" href="assets/css/forms.css?v=15">
-    <link rel="stylesheet" href="assets/css/tables.css?v=15">
-    <link rel="stylesheet" href="assets/css/admin.css?v=15">
+    
+    <link rel="stylesheet" href="assets/css/main.css?v=25">
+    <link rel="stylesheet" href="assets/css/components.css?v=25">
+    <link rel="stylesheet" href="assets/css/forms.css?v=25">
+    <link rel="stylesheet" href="assets/css/tables.css?v=25">
+    <link rel="stylesheet" href="assets/css/admin.css?v=25">
 </head>
 <body>
     <div id="app" class="app-layout">
@@ -31,20 +32,21 @@
                 </div>
                 <a onclick="navigate('dashboard')" class="nav-item" id="nav-dashboard">📈 آمار و وضعیت</a>
                 <a onclick="navigate('users')" class="nav-item" id="nav-users">👥 مدیریت کاربران</a>
-                <a onclick="navigate('support')" class="nav-item" id="nav-support">🛠️ پشتیبانی و باگ‌ها</a>
+                <a onclick="navigate('support')" class="nav-item" id="nav-support">🛠️ تنظیمات و پشتیبانی</a>
             </nav>
             <main class="content" id="content-area"></main>
         </div>
     </div>
 
-    <script src="assets/js/config.js?v=15"></script>
-    <script src="assets/js/auth.js?v=15"></script>
-    <script src="assets/js/modules/utils.js?v=15"></script>
-    <script src="assets/js/modules/offline-db.js?v=15"></script>
-    <script src="assets/js/modules/admin-api.js?v=15"></script>
-    <script src="assets/js/modules/admin-dashboard.js?v=15"></script>
-    <script src="assets/js/modules/admin-support.js?v=15"></script>
-    <script src="assets/js/modules/admin-users.js?v=15"></script>
+    <!-- Scripts -->
+    <script src="assets/js/config.js?v=25"></script>
+    <script src="assets/js/auth.js?v=25"></script>
+    <script src="assets/js/modules/utils.js?v=25"></script>
+    <script src="assets/js/modules/offline-db.js?v=25"></script>
+    <script src="assets/js/modules/admin-api.js?v=25"></script>
+    <script src="assets/js/modules/admin-dashboard.js?v=25"></script>
+    <script src="assets/js/modules/admin-support.js?v=25"></script>
+    <script src="assets/js/modules/admin-users.js?v=25"></script>
 
     <script>
         const session = checkAuth('admin');
@@ -74,9 +76,8 @@
             else if (view === 'support') renderSupportPanel();
         }
 
-        // راه‌اندازی دیتابیس محلی و سپس لود صفحه
         window.onload = async () => {
-            await OfflineDB.init(); // <--- این خط مشکل پروفایل را حل می‌کند
+            await OfflineDB.init(); // راه‌اندازی دیتابیس محلی برای خواندن آمارها
             navigate('dashboard');
         };
     </script>
