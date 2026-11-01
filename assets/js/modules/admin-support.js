@@ -1,68 +1,50 @@
 function renderSupportPanel() {
     const content = document.getElementById('content-area');
-    let bugs = JSON.parse(localStorage.getItem('iqdws_bugs')) || [
-        { id: 'BUG-101', title: 'مشکل نمایش تاریخ در فایرفاکس', priority: 'medium', status: 'open', date: '1403/08/01' }
-    ];
+    let titles = JSON.parse(localStorage.getItem('iqdws_defect_titles') || '[]');
 
     content.innerHTML = `
-        <h2 class="page-title">پشتیبانی و رفع باگ (حالت محلی)</h2>
+        <h2 class="page-title">پشتیبانی و تنظیمات (آفلاین)</h2>
         
         <div class="card" style="margin-bottom: 20px;">
-            <div class="card-title">ثبت گزارش جدید</div>
-            <div class="form-row">
-                <div class="form-col"><input type="text" id="bug_title" class="form-control" placeholder="عنوان مشکل..."></div>
-                <div class="form-col">
-                    <select id="bug_priority" class="form-control">
-                        <option value="low">اولویت کم</option>
-                        <option value="medium">متوسط</option>
-                        <option value="high">بحرانی</option>
-                    </select>
-                </div>
+            <div class="card-title">مدیریت عنوان‌های ایراد (فرم ثبت بازرس)</div>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="text" id="new_title" class="form-control" placeholder="عنوان جدید را وارد کنید...">
+                <button class="btn btn-primary" style="background:#4a148c;" onclick="addDefectTitle()">افزودن</button>
             </div>
-            <button class="btn btn-primary" style="margin-top: 10px; background-color: #4a148c;" onclick="submitBug()">ثبت باگ</button>
-        </div>
-
-        <div class="card">
-            <div class="card-title">لیست باگ‌ها</div>
-            <div id="bug-list">
-                ${bugs.map(b => `
-                    <div class="bug-card ${b.status === 'resolved' ? 'resolved' : ''}">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <strong style="color:#4a148c;">${b.id}</strong> - ${b.title}
-                            </div>
-                            <div>
-                                ${b.status === 'open' 
-                                    ? `<button class="btn btn-sm btn-success" onclick="resolveBug('${b.id}')">حل شد</button>` 
-                                    : `<span class="badge status-closed">حل شده</span>`}
-                            </div>
-                        </div>
-                    </div>
-                `).join('') || '<p>باگی ثبت نشده است.</p>'}
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>عنوان</th><th>عملیات</th></tr></thead>
+                    <tbody>
+                        ${titles.map((t, i) => `
+                            <tr>
+                                <td>${t}</td>
+                                <td><button class="btn-icon delete" onclick="deleteDefectTitle(${i})">حذف</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
             </div>
         </div>
     `;
 }
 
-function submitBug() {
-    const title = document.getElementById('bug_title').value;
-    const priority = document.getElementById('bug_priority').value;
-    if(!title) return Utils.toast('عنوان را وارد کنید', 'error');
-
-    let bugs = JSON.parse(localStorage.getItem('iqdws_bugs')) || [];
-    bugs.unshift({ id: 'BUG-' + Math.floor(Math.random() * 900 + 100), title, priority, status: 'open', date: new Date().toLocaleDateString('fa-IR') });
-    localStorage.setItem('iqdws_bugs', JSON.stringify(bugs));
-    Utils.toast('باگ ثبت شد');
-    renderSupportPanel();
+function addDefectTitle() {
+    const val = document.getElementById('new_title').value.trim();
+    if(!val) return;
+    let titles = JSON.parse(localStorage.getItem('iqdws_defect_titles') || '[]');
+    if(!titles.includes(val)) {
+        titles.push(val);
+        localStorage.setItem('iqdws_defect_titles', JSON.stringify(titles));
+        renderSupportPanel();
+        Utils.toast('عنوان اضافه شد');
+    }
 }
 
-function resolveBug(id) {
-    let bugs = JSON.parse(localStorage.getItem('iqdws_bugs')) || [];
-    const bug = bugs.find(b => b.id === id);
-    if(bug) {
-        bug.status = 'resolved';
-        localStorage.setItem('iqdws_bugs', JSON.stringify(bugs));
-        Utils.toast('باگ حل‌شده علامت‌گذاری شد');
-        renderSupportPanel();
-    }
+function deleteDefectTitle(index) {
+    if(!confirm('حذف شود؟')) return;
+    let titles = JSON.parse(localStorage.getItem('iqdws_defect_titles') || '[]');
+    titles.splice(index, 1);
+    localStorage.setItem('iqdws_defect_titles', JSON.stringify(titles));
+    renderSupportPanel();
+    Utils.toast('عنوان حذف شد');
 }
