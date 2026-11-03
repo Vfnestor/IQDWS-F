@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IQDWS — ماژول در حال ساخت</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/pages.css">
+</head>
+<body>
+  <div id="app-shell" class="app-shell">
+    <main class="app-main">
+      <div class="app-main-inner">
+        <div class="card">
+          <div class="card-body">
+            <div class="empty-state">
+              <div class="empty-state-icon">🚧</div>
+              <div class="empty-state-title" id="stub-title">این ماژول به زودی اضافه می‌شود</div>
+              <div class="empty-state-desc" id="stub-desc">
+                این بخش در فازهای بعدی اکوسیستم کیفیت پیاده‌سازی خواهد شد.
+              </div>
+              <div class="mt-4">
+                <a href="../main.html" class="btn btn-primary">بازگشت به داشبورد</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script type="module">
+    import { mountShell } from '../assets/js/shell.js';
+    import { store } from '../assets/js/store.js';
+    const session = await store.getSession();
+    if (session) store.set('session', session);
+    mountShell();
+    const params = new URLSearchParams(location.search);
+    const label = params.get('label');
+    if (label) {
+      document.getElementById('stub-title').textContent = `ماژول «${label}» به زودی اضافه می‌شود`;
+    }
+  </script>
+</body>
+</html>
