@@ -101,6 +101,7 @@ class ApiClient {
     }
   }
 
+  /* --- Auth --- */
   async login(username, password) {
     const res = await this.request('POST', '/auth/login', { username, password });
     if (res.data?.token) this.setToken(res.data.token);
@@ -108,20 +109,37 @@ class ApiClient {
   }
   async logout() { this.setToken(null); await store.clearSession(); }
 
+  /* --- Defects (پایه فعلی) --- */
   listDefects(p)      { return this.cachedGet('/defects', p); }
   getDefect(id)       { return this.request('GET', `/defects/${id}`); }
   createDefect(d)     { return this.request('POST', '/defects', d, { resource: 'defects' }); }
   updateDefect(id, d) { return this.request('PUT', `/defects/${id}`, d, { resource: 'defects' }); }
 
+  /* --- QAN --- */
   listQANs(p)         { return this.cachedGet('/qans', p); }
   createQAN(d)        { return this.request('POST', '/qans', d, { resource: 'qans' }); }
 
+  /* --- Claims --- */
   listClaims(p)       { return this.cachedGet('/claims', p); }
   createClaim(d)      { return this.request('POST', '/claims', d, { resource: 'claims' }); }
 
+  /* --- Analysis Tasks --- */
   listAnalysisTasks(p){ return this.cachedGet('/analysis-tasks', p); }
+
+  /* --- Operator Errors --- */
   listOperatorErrors(p){ return this.cachedGet('/operator-errors', p); }
+
+  /* --- Users (admin) --- */
   listUsers(p)        { return this.cachedGet('/users', p); }
+
+  /* --- Dashboard --- */
+  async getDashboard() {
+    if (CONFIG.mode === 'mock') {
+      await new Promise(r => setTimeout(r, 200));
+      return { data: mock.mock_dashboard, _mock: true };
+    }
+    return this.cachedGet('/dashboard');
+  }
 }
 
 export const api = new ApiClient();
