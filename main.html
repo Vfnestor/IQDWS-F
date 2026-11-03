@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سامانه مادر | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css?v=40">
-    <link rel="stylesheet" href="assets/css/components.css?v=40">
-    <link rel="stylesheet" href="assets/css/forms.css?v=40">
-    <link rel="stylesheet" href="assets/css/tables.css?v=40">
-    <link rel="stylesheet" href="assets/css/analytics.css?v=40">
-    <link rel="stylesheet" href="assets/css/admin.css?v=40">
+    <link rel="stylesheet" href="assets/css/main.css?v=42">
+    <link rel="stylesheet" href="assets/css/components.css?v=42">
+    <link rel="stylesheet" href="assets/css/forms.css?v=42">
+    <link rel="stylesheet" href="assets/css/tables.css?v=42">
+    <link rel="stylesheet" href="assets/css/analytics.css?v=42">
+    <link rel="stylesheet" href="assets/css/admin.css?v=42">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
@@ -39,20 +39,23 @@
         </div>
     </div>
 
-    <script src="assets/js/config.js?v=40"></script>
-    <script src="assets/js/auth.js?v=40"></script>
-    <script src="assets/js/modules/utils.js?v=40"></script>
-    <script src="assets/js/modules/offline-db.js?v=40"></script>
-    <script src="assets/js/modules/sync-manager.js?v=40"></script>
-    <script src="assets/js/modules/image-utils.js?v=40"></script>
-    <script src="assets/js/modules/api.js?v=40"></script>
-    <script src="assets/js/modules/sla-manager.js?v=40"></script>
-    <script src="assets/js/modules/defect.js?v=40"></script>
-    <script src="assets/js/modules/qan.js?v=40"></script>
-    <script src="assets/js/modules/search.js?v=40"></script>
-    <script src="assets/js/modules/analysis.js?v=40"></script>
-    <script src="assets/js/modules/operator.js?v=40"></script>
-    <script src="assets/js/modules/main-analytics.js?v=40"></script>
+    <!-- کتابخانه تبدیل تاریخ شمسی -->
+    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+
+    <script src="assets/js/config.js?v=42"></script>
+    <script src="assets/js/auth.js?v=42"></script>
+    <script src="assets/js/modules/utils.js?v=42"></script>
+    <script src="assets/js/modules/offline-db.js?v=42"></script>
+    <script src="assets/js/modules/sync-manager.js?v=42"></script>
+    <script src="assets/js/modules/image-utils.js?v=42"></script>
+    <script src="assets/js/modules/api.js?v=42"></script>
+    <script src="assets/js/modules/sla-manager.js?v=42"></script>
+    <script src="assets/js/modules/defect.js?v=42"></script>
+    <script src="assets/js/modules/qan.js?v=42"></script>
+    <script src="assets/js/modules/search.js?v=42"></script>
+    <script src="assets/js/modules/analysis.js?v=42"></script>
+    <script src="assets/js/modules/operator.js?v=42"></script>
+    <script src="assets/js/modules/main-analytics.js?v=42"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
@@ -85,17 +88,9 @@
                     { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }
                 ];
             } else if (session.roleId === 'dept_head' || session.roleId === 'office_head') {
-                menu = [
-                    { id: 'dashboard', title: 'داشبورد', icon: '📊' }, 
-                    { id: 'qans', title: 'تاییدیه اخطارها', icon: '✅' }
-                ];
+                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'qans', title: 'تاییدیه اخطارها', icon: '✅' }];
             } else {
-                menu = [
-                    { id: 'dashboard', title: 'داشبورد', icon: '📊' }, 
-                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' }, 
-                    { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }, 
-                    { id: 'analytics', title: 'عملکرد سازندگان', icon: '🏢' }
-                ];
+                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'defects', title: 'لیست ایرادها', icon: '📋' }, { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }, { id: 'analytics', title: 'عملکرد سازندگان', icon: '🏢' }];
             }
             document.getElementById('nav-items-container').innerHTML = menu.map(item => `
                 <a onclick="navigate('${item.id}')" class="nav-item" id="nav-${item.id}">
