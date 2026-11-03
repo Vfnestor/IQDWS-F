@@ -1,4 +1,5 @@
 let currentImageBase64 = null;
+let calYear, calMonth; // متغیرهای تقویم
 
 // ==================== داشبورد (نمودار و تقویم) ====================
 async function renderDashboard() {
@@ -12,15 +13,46 @@ async function renderDashboard() {
     const total = defects.length || 1;
     const resolvedDeg = (resolvedCount / total) * 360;
 
-    const upcoming = defects.filter(d => 
-        (d.status === 'registered' && d.slaReviewDate) || 
-        (d.status === 'pending_supplier' && d.slaSupplierDate) || 
-        (d.status === 'pending_8d' && d.slaResolutionDate)
-    ).map(d => {
-        let date = d.status === 'registered' ? d.slaReviewDate : d.status === 'pending_supplier' ? d.slaSupplierDate : d.slaResolutionDate;
-        let label = d.status === 'registered' ? 'مهلت بررسی کارشناس' : d.status === 'pending_supplier' ? 'مهلت پاسخ سازنده' : 'مهلت رفع نهایی 8D';
-        return { code: d.defectCode, date: new Date(date), label };
-    }).sort((a,b) => a.date - b.date).slice(0, 5);
+    // مقداردهی اولیه تقویم بر اساس تاریخ امروز
+    if (!calYear || !calMonth) {
+        const todayJalali = jalaali.toJalaali(new Date());
+        calYear = todayJalali.jy;
+        calMonth = todayJalali.jm;
+    }
+
+    // ساخت گرید تقویم
+    const monthNames = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+    const daysInMonth = jalaali.jalaaliMonthLength(calYear, calMonth);
+    
+    // پیدا کردن روز شروع ماه (0=شنبه, 1=یکشنبه, ..., 6=جمعه)
+    const firstDayG = jalaali.toGregorian(calYear, calMonth, 1);
+    const startDay = (new Date(firstDayG.gy, firstDayG.gm - 1, firstDayG.gd).getDay() + 1) % 7;
+
+    let gridCells = '';
+    for (let i = 0; i < startDay; i++) gridCells += '<div></div>';
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+        // بررسی اینکه آیا این روز سررسید هست یا نه
+        const hasDeadline = defects.some(d => {
+            if (d.status === 'closed' || d.status === 'brand_analysis') return false;
+            const dates = [d.slaReviewDate, d.slaSupplierDate, d.slaResolutionDate].filter(x => x);
+            return dates.some(dateStr => {
+                const jDate = jalaali.toJalaali(new Date(dateStr));
+                return jDate.jy === calYear && jDate.jm === calMonth && jDate.jd === i;
+            });
+        });
+
+        gridCells += `
+            <div class="cal-day ${hasDeadline ? 'has-deadline' : ''}" onclick="showDayDetails(${calYear}, ${calMonth}, ${i})">
+                ${i}
+            </div>
+        `;
+    }
+
+    // بررسی امکان تغییر ماه (فقط در سال جاری)
+    const currentYear = jalaali.toJalaali(new Date()).jy;
+    const prevDisabled = calMonth === 1 && calYear === currentYear ? 'disabled' : '';
+    const nextDisabled = calMonth === 12 && calYear === currentYear ? 'disabled' : '';
 
     content.innerHTML = `
         <div class="form-row">
@@ -39,42 +71,108 @@ async function renderDashboard() {
                         <div><span style="color:#c62828;">●</span> رفع نشده (${unresolvedCount})</div>
                     </div>
                 </div>
+
+                <div class="card">
+                    <h3 class="card-title">📬 صندوق پیام‌ها (${notifs.filter(n=>!n.isRead).length} جدید)</h3>
+                    ${notifs.slice(0, 5).map(n => `
+                        <div style="padding:10px; border-bottom:1px solid #eee; background:${n.isRead ? '#fff' : '#e3f2fd'}; border-radius:4px; margin-bottom:5px; cursor:pointer;" onclick="OfflineDB.markNotifRead('${n.notifId}'); renderDashboard();">
+                            <div style="font-size:12px; color:#333;">${n.text}</div>
+                            <div style="font-size:10px; color:#888; margin-top:4px;">${Utils.formatDate(n.date)}</div>
+                        </div>
+                    `).join('') || '<p style="font-size:12px; color:#888;">پیامی وجود ندارد.</p>'}
+                </div>
             </div>
 
             <div class="form-col" style="flex:2;">
                 <div class="card">
-                    <h3 class="card-title">📅 مهلت‌های پیش رو (SLA)</h3>
-                    ${upcoming.length === 0 ? '<p style="color:#888; font-size:12px;">هیچ مهلت فعالی وجود ندارد.</p>' : `
-                    <div class="table-wrapper">
-                        <table>
-                            <thead><tr><th>کد ایراد</th><th>نوع مهلت</th><th>تاریخ سررسید</th><th>وضعیت</th></tr></thead>
-                            <tbody>
-                                ${upcoming.map(u => {
-                                    const isLate = u.date < new Date();
-                                    return `<tr>
-                                        <td style="font-weight:bold; color:var(--primary);">${u.code}</td>
-                                        <td>${u.label}</td>
-                                        <td dir="ltr" style="text-align:right;">${u.date.toLocaleDateString('fa-IR')}</td>
-                                        <td>${isLate ? '<span style="color:red; font-weight:bold;">تاخیر خورده</span>' : '<span style="color:green;">فعال</span>'}</td>
-                                    </tr>`;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>`}
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h3 class="card-title" style="border:none; margin:0; padding:0;">📅 تقویم مهلت‌ها</h3>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button class="btn btn-sm btn-outline" ${prevDisabled} onclick="changeMonth(-1)">ماه قبل</button>
+                            <span style="font-weight:bold; font-size:15px; color:var(--primary);">${monthNames[calMonth - 1]} ${calYear}</span>
+                            <button class="btn btn-sm btn-outline" ${nextDisabled} onclick="changeMonth(1)">ماه بعد</button>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-grid">
+                        <div class="cal-header">ش</div><div class="cal-header">ی</div><div class="cal-header">د</div>
+                        <div class="cal-header">س</div><div class="cal-header">چ</div><div class="cal-header">پ</div>
+                        <div class="cal-header">ج</div>
+                        ${gridCells}
+                    </div>
+                    <div style="font-size:11px; color:#888; margin-top:10px; text-align:left;">
+                        <span style="color:#c62828; font-weight:bold;">*</span> روزهای دارای مهلت سررسید
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="card">
-            <h3 class="card-title">📬 صندوق پیام‌ها (${notifs.filter(n=>!n.isRead).length} جدید)</h3>
-            ${notifs.slice(0, 5).map(n => `
-                <div style="padding:10px; border-bottom:1px solid #eee; background:${n.isRead ? '#fff' : '#e3f2fd'}; border-radius:4px; margin-bottom:5px; cursor:pointer;" onclick="OfflineDB.markNotifRead('${n.notifId}'); renderDashboard();">
-                    <div style="font-size:12px; color:#333;">${n.text}</div>
-                    <div style="font-size:10px; color:#888; margin-top:4px;">${Utils.formatDate(n.date)}</div>
-                </div>
-            `).join('') || '<p style="font-size:12px; color:#888;">پیامی وجود ندارد.</p>'}
-        </div>
     `;
+}
+
+function changeMonth(delta) {
+    const currentYear = jalaali.toJalaali(new Date()).jy;
+    let newMonth = calMonth + delta;
+    
+    if (newMonth < 1) newMonth = 1;
+    if (newMonth > 12) newMonth = 12;
+
+    // اگر سال تغییر کرد و از سال جاری خارج شد، اجازه نده
+    if (calYear !== currentYear) return;
+
+    calMonth = newMonth;
+    renderDashboard();
+}
+
+async function showDayDetails(jy, jm, jd) {
+    const defects = await OfflineDB.getDefects();
+    
+    // فیلتر کردن ایراداتی که مهلتشان دقیقا این روز است
+    const dayDefects = defects.filter(d => {
+        if (d.status === 'closed' || d.status === 'brand_analysis') return false;
+        const dates = [d.slaReviewDate, d.slaSupplierDate, d.slaResolutionDate].filter(x => x);
+        return dates.some(dateStr => {
+            const jDate = jalaali.toJalaali(new Date(dateStr));
+            return jDate.jy === jy && jDate.jm === jm && jDate.jd === jd;
+        });
+    });
+
+    if (dayDefects.length === 0) {
+        return Utils.toast('هیچ مهلتی برای این روز ثبت نشده است.', 'info');
+    }
+
+    let rows = dayDefects.map(d => {
+        let deadlineType = '';
+        let targetDate = null;
+        if (d.slaReviewDate && jalaali.toJalaali(new Date(d.slaReviewDate)).jd === jd) { deadlineType = 'مهلت بررسی کارشناس'; targetDate = d.slaReviewDate; }
+        else if (d.slaSupplierDate && jalaali.toJalaali(new Date(d.slaSupplierDate)).jd === jd) { deadlineType = 'مهلت پاسخ سازنده'; targetDate = d.slaSupplierDate; }
+        else if (d.slaResolutionDate && jalaali.toJalaali(new Date(d.slaResolutionDate)).jd === jd) { deadlineType = 'مهلت رفع 8D'; targetDate = d.slaResolutionDate; }
+
+        const isLate = new Date(targetDate) < new Date();
+        
+        // آخرین آپدیت
+        const lastUpdate = d.lastUpdatedBy ? `${d.lastUpdatedBy} (${Utils.formatDate(d.lastUpdatedAt)})` : `بازرس: ${d.createdByName} (${Utils.formatDate(d.createdAt)})`;
+
+        return `
+            <div style="border:1px solid #eee; padding:10px; margin-bottom:10px; border-radius:6px; border-right:4px solid ${isLate ? '#c62828' : '#2e7d32'};">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <strong style="color:var(--primary);">${d.defectCode} - ${d.title}</strong>
+                    <span class="badge sev-${d.severity}">${d.severity}</span>
+                </div>
+                <div style="font-size:12px; color:#333;">نوع مهلت: <b>${deadlineType}</b></div>
+                <div style="font-size:12px; color:#333; margin-top:5px;">آخرین به‌روزرسانی: ${lastUpdate}</div>
+                <div style="margin-top:8px;">
+                    <button class="btn btn-sm btn-outline" onclick="Utils.closeModal(); navigate('defect-detail', '${d.defectCode}')">مشاهده جزئیات</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    Utils.openModal(`
+        <h3 style="color:var(--primary); margin-bottom:15px;">ایرادات دارای سررسید در این روز</h3>
+        <div style="max-height:400px; overflow-y:auto;">
+            ${rows}
+        </div>
+    `);
 }
 
 // ==================== ثبت ایراد ====================
@@ -162,6 +260,9 @@ async function submitDefectForm(e) {
         createdBy: session.username,
         createdByName: session.displayName,
         createdAt: now.toISOString(),
+        // آخرین آپدیت
+        lastUpdatedBy: session.displayName,
+        lastUpdatedAt: now.toISOString(),
         reviewSteps: [],
         slaReviewDate: SLAManager.addDays(now, 1).toISOString(),
         expertRejectCount: 0,
@@ -175,7 +276,10 @@ async function submitDefectForm(e) {
     navigate('defects');
 }
 
-// ==================== لیست ایرادها ====================
+// ... (بقیه توابع مانند renderDefectList، renderDefectDetail، renderExpertDefectDetail و... بدون تغییر باقی می‌مانند) ...
+// برای جلوگیری از شلوغی، فقط بخش‌هایی که تغییر کرده‌اند را نوشتم. 
+// لطفا از فایل قبلی برای بقیه توابع استفاده کنید یا کد زیر را کامل جایگزین کنید.
+
 async function renderDefectList() {
     const content = document.getElementById('content-area');
     content.innerHTML = `<p>در حال خواندن...</p>`;
@@ -214,7 +318,6 @@ async function renderDefectList() {
     } catch (e) { content.innerHTML = `<p style="color:red;">خطا.</p>`; }
 }
 
-// ==================== مشاهده ساده ====================
 async function renderDefectDetail(code) {
     const content = document.getElementById('content-area');
     const d = await OfflineDB.getDefectByCode(code);
@@ -235,14 +338,13 @@ async function renderDefectDetail(code) {
             <div class="detail-row"><span class="lbl">تعداد</span><span class="val">${d.qty}</span></div>
             <div class="detail-row"><span class="lbl">شرح</span><span class="val">${d.desc || '—'}</span></div>
             <div class="detail-row"><span class="lbl">ثبت‌کننده</span><span class="val">${d.createdByName} (${d.createdBy})</span></div>
-            <div class="detail-row"><span class="lbl">تاریخ ثبت</span><span class="val">${Utils.formatDate(d.createdAt)}</span></div>
+            <div class="detail-row"><span class="lbl">آخرین به‌روزرسانی</span><span class="val">${d.lastUpdatedBy || d.createdByName} - ${Utils.formatDate(d.lastUpdatedAt || d.createdAt)}</span></div>
             ${d.imageBase64 ? `<div style="margin-top:15px;"><img src="${d.imageBase64}" style="max-width:100%; border-radius:8px; max-height:300px;"></div>` : ''}
             <div style="margin-top:20px;"><button class="btn btn-outline" onclick="navigate('defects')">← بازگشت به لیست</button></div>
         </div>
     `;
 }
 
-// ==================== مشاهده پیگیری (بازرس) ====================
 async function renderInspectorFollowup(code) {
     const content = document.getElementById('content-area');
     const d = await OfflineDB.getDefectByCode(code);
@@ -306,7 +408,6 @@ async function renderInspectorFollowup(code) {
     `;
 }
 
-// ==================== گردش‌کار کارشناس (تایید/رد) ====================
 async function renderExpertDefectDetail(code) {
     const content = document.getElementById('content-area');
     const d = await OfflineDB.getDefectByCode(code);
@@ -362,7 +463,7 @@ async function renderExpertDefectDetail(code) {
                 <div class="form-col">
                     <div class="detail-row"><span class="lbl">ثبت‌کننده</span><span class="val">${d.createdByName}</span></div>
                     <div class="detail-row"><span class="lbl">تاریخ ثبت</span><span class="val">${Utils.formatDate(d.createdAt)}</span></div>
-                    <div class="detail-row"><span class="lbl">شرح</span><span class="val">${d.desc || '—'}</span></div>
+                    <div class="detail-row"><span class="lbl">آخرین به‌روزرسانی</span><span class="val">${d.lastUpdatedBy || d.createdByName} - ${Utils.formatDate(d.lastUpdatedAt || d.createdAt)}</span></div>
                 </div>
             </div>
             ${actionButtons}
@@ -416,11 +517,12 @@ async function renderExpertDefectDetail(code) {
     `;
 }
 
-// --- منطق تایید/رد ---
 async function acceptInitialReview(code) {
     const d = await OfflineDB.getDefectByCode(code);
     d.status = 'pending_supplier';
     d.slaSupplierDate = SLAManager.addDays(new Date(), 3).toISOString();
+    d.lastUpdatedAt = new Date().toISOString();
+    d.lastUpdatedBy = JSON.parse(localStorage.getItem('iqdws_session')).displayName;
     await OfflineDB.saveDefect(d);
     Utils.toast('ایراد تایید شد و برای سازنده ارسال شد.');
     renderExpertDefectDetail(code);
@@ -429,6 +531,8 @@ async function acceptInitialReview(code) {
 async function rejectInitialReview(code) {
     const d = await OfflineDB.getDefectByCode(code);
     d.expertRejectCount = (d.expertRejectCount || 0) + 1;
+    d.lastUpdatedAt = new Date().toISOString();
+    d.lastUpdatedBy = JSON.parse(localStorage.getItem('iqdws_session')).displayName;
 
     if (d.expertRejectCount >= 3) {
         d.status = 'brand_analysis';
@@ -448,6 +552,8 @@ async function rejectInitialReview(code) {
 async function rejectSupplierResponse(code) {
     const d = await OfflineDB.getDefectByCode(code);
     d.supplierRejectCount = (d.supplierRejectCount || 0) + 1;
+    d.lastUpdatedAt = new Date().toISOString();
+    d.lastUpdatedBy = JSON.parse(localStorage.getItem('iqdws_session')).displayName;
 
     if (d.supplierRejectCount >= 3) {
         d.status = 'brand_analysis';
@@ -468,12 +574,13 @@ async function approveSupplierResponse(code) {
     const d = await OfflineDB.getDefectByCode(code);
     d.status = 'pending_8d';
     d.slaResolutionDate = SLAManager.addDays(new Date(), 15).toISOString();
+    d.lastUpdatedAt = new Date().toISOString();
+    d.lastUpdatedBy = JSON.parse(localStorage.getItem('iqdws_session')).displayName;
     await OfflineDB.saveDefect(d);
     Utils.toast('پاسخ سازنده تایید شد. مهلت ۱۵ روزه 8D آغاز شد.');
     renderExpertDefectDetail(code);
 }
 
-// --- مدیریت مراحل بررسی ---
 function openAddStepModal(defectCode) {
     Utils.openModal(`
         <h3 style="color:var(--warning); margin-bottom:15px;">افزودن مرحله بررسی</h3>
@@ -488,6 +595,10 @@ async function saveReviewStep(defectCode) {
     const session = JSON.parse(localStorage.getItem('iqdws_session'));
     if(!d.reviewSteps) d.reviewSteps = [];
     d.reviewSteps.push({ date: new Date().toLocaleDateString('fa-IR'), desc, by: session.displayName });
+    // آپدیت فیلدهای آخرین تغییر
+    d.lastUpdatedAt = new Date().toISOString();
+    d.lastUpdatedBy = session.displayName;
+    
     await OfflineDB.saveDefect(d);
     Utils.closeModal(); renderExpertDefectDetail(defectCode);
 }
@@ -505,6 +616,8 @@ async function updateReviewStep(defectCode, index) {
     if(!desc) return;
     const d = await OfflineDB.getDefectByCode(defectCode);
     d.reviewSteps[index].desc = desc;
+    d.lastUpdatedAt = new Date().toISOString();
+    d.lastUpdatedBy = JSON.parse(localStorage.getItem('iqdws_session')).displayName;
     await OfflineDB.saveDefect(d);
     Utils.closeModal(); renderExpertDefectDetail(defectCode);
 }
@@ -512,11 +625,12 @@ async function deleteReviewStep(defectCode, index) {
     if(!confirm('حذف شود؟')) return;
     const d = await OfflineDB.getDefectByCode(defectCode);
     d.reviewSteps.splice(index, 1);
+    d.lastUpdatedAt = new Date().toISOString();
+    d.lastUpdatedBy = JSON.parse(localStorage.getItem('iqdws_session')).displayName;
     await OfflineDB.saveDefect(d);
     renderExpertDefectDetail(defectCode);
 }
 
-// --- کارت کلیم ---
 function openClaimModal(defectCode) {
     Utils.openModal(`
         <h3 style="color:var(--secondary); margin-bottom:15px;">ثبت کارت کلیم</h3>
