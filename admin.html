@@ -1,83 +1,33 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پنل مدیریت | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css?v=50">
-    <link rel="stylesheet" href="assets/css/components.css?v=50">
-    <link rel="stylesheet" href="assets/css/forms.css?v=50">
-    <link rel="stylesheet" href="assets/css/tables.css?v=50">
-    <link rel="stylesheet" href="assets/css/admin.css?v=50">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IQDWS — مدیریت سیستم</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
 </head>
 <body>
-    <div id="app" class="app-layout">
-        <header class="app-header admin-header">
-            <div class="header-brand">
-                <button class="menu-btn" onclick="toggleMenu()">☰</button>
-                ⚙️ پنل مدیریت اکوسیستم (آفلاین)
-            </div>
-            <div class="header-user">
-                <span id="user-info" style="font-weight:bold; font-size:13px;"></span>
-                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
-            </div>
-        </header>
-        <div class="app-body">
-            <div class="sidebar-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
-            <nav class="sidebar admin-sidebar" id="main-sidebar">
-                <div class="sidebar-header">
-                    <span>منوی مدیریت</span>
-                    <button class="close-btn" onclick="toggleMenu()">✖</button>
-                </div>
-                <a onclick="navigate('dashboard')" class="nav-item" id="nav-dashboard">📈 آمار و وضعیت</a>
-                <a onclick="navigate('users')" class="nav-item" id="nav-users">👥 مدیریت کاربران</a>
-                <a onclick="navigate('support')" class="nav-item" id="nav-support">🛠️ تنظیمات و پشتیبانی</a>
-            </nav>
-            <main class="content" id="content-area"></main>
-        </div>
-    </div>
+  <div id="app-shell" class="app-shell">
+    <main class="app-main">
+      <div class="app-main-inner">
 
-    <script src="assets/js/config.js?v=50"></script>
-    <script src="assets/js/auth.js?v=50"></script>
-    <script src="assets/js/modules/utils.js?v=50"></script>
-    <script src="assets/js/modules/offline-db.js?v=50"></script>
-    <script src="assets/js/modules/backup-manager.js?v=50"></script> <!-- فایل جدید -->
-    <script src="assets/js/modules/admin-api.js?v=50"></script>
-    <script src="assets/js/modules/admin-dashboard.js?v=50"></script>
-    <script src="assets/js/modules/admin-support.js?v=50"></script>
-    <script src="assets/js/modules/admin-users.js?v=50"></script>
+        <!-- ▼▼▼ محتوای فعلی admin.html را اینجا قرار دهید — بدون تغییر ▼▼▼ -->
+        <!-- ▲▲▲ پایان محتوای فعلی ▲▲▲ -->
 
-    <script>
-        const session = checkAuth('admin');
-        if (session) {
-            document.getElementById('user-info').innerText = `${session.displayName} (${session.roleName})`;
-        }
+      </div>
+    </main>
+  </div>
 
-        function toggleMenu() {
-            document.getElementById('main-sidebar').classList.toggle('active');
-            document.getElementById('menu-overlay').classList.toggle('active');
-        }
-
-        function navigate(view) {
-            if(window.innerWidth < 768) toggleMenu();
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const activeNav = document.getElementById(`nav-${view}`);
-            if(activeNav) activeNav.classList.add('active');
-
-            if (view === 'users') {
-                adminUserView = 'list';
-                currentSearchFilter = { role: '', username: '' };
-            }
-
-            if (view === 'dashboard') renderAdminDashboard();
-            else if (view === 'users') renderUserManagement();
-            else if (view === 'support') renderSupportPanel();
-        }
-
-        window.onload = async () => {
-            await OfflineDB.init();
-            navigate('dashboard');
-        };
-    </script>
+  <script type="module" src="assets/js/pages/admin.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
 </html>
