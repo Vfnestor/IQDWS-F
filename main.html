@@ -1,134 +1,39 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه مادر | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css?v=46">
-    <link rel="stylesheet" href="assets/css/components.css?v=46">
-    <link rel="stylesheet" href="assets/css/forms.css?v=46">
-    <link rel="stylesheet" href="assets/css/tables.css?v=46">
-    <link rel="stylesheet" href="assets/css/analytics.css?v=46">
-    <link rel="stylesheet" href="assets/css/admin.css?v=46">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IQDWS — داشبورد</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
 </head>
 <body>
-    <div id="app" class="app-layout">
-        <header class="app-header">
-            <div class="header-brand">
-                <button class="menu-btn" onclick="toggleMenu()">☰</button>
-                🏭 سامانه مادر IQDWS
-            </div>
-            <div class="header-user">
-                <button id="sync-btn" class="btn btn-sm" style="background:#2e7d32; color:white; margin-left:15px;" onclick="SyncManager.processQueue()">☁️ آپلود</button>
-                <span id="user-info" style="font-weight:bold; font-size:13px;"></span>
-                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
-            </div>
-        </header>
-        
-        <div class="app-body">
-            <div class="sidebar-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
-            <nav class="sidebar" id="main-sidebar">
-                <div class="sidebar-header">
-                    <span>منوی اصلی</span>
-                    <button class="close-btn" onclick="toggleMenu()">✖</button>
-                </div>
-                <div id="nav-items-container"></div>
-            </nav>
-            <main class="content" id="content-area"></main>
-        </div>
-    </div>
+  <div id="app-shell" class="app-shell">
+    <main class="app-main">
+      <div class="app-main-inner">
 
-    <!-- کتابخانه تبدیل تاریخ شمسی -->
-    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+        <!-- ▼▼▼ محتوای فعلی main.html را اینجا قرار دهید — بدون تغییر ▼▼▼ -->
+        <!--
+          محتوای فعلی شامل «سامانه مادر IQDWS» و آپلود خروج را
+          دقیقاً همان‌طور که هست اینجا بگذارید.
+          فقط توجه کنید: هر استایل inline قدیمی که دارید، در فاز بعد
+          به assets/css/pages.css منتقل می‌شود.
+        -->
+        <!-- ▲▲▲ پایان محتوای فعلی ▲▲▲ -->
 
-    <script src="assets/js/config.js?v=46"></script>
-    <script src="assets/js/auth.js?v=46"></script>
-    <script src="assets/js/modules/utils.js?v=46"></script>
-    <script src="assets/js/modules/offline-db.js?v=46"></script>
-    <script src="assets/js/modules/sync-manager.js?v=46"></script>
-    <script src="assets/js/modules/image-utils.js?v=46"></script>
-    <script src="assets/js/modules/api.js?v=46"></script>
-    <script src="assets/js/modules/sla-manager.js?v=46"></script>
-    <script src="assets/js/modules/defect.js?v=46"></script>
-    <script src="assets/js/modules/qan.js?v=46"></script>
-    <script src="assets/js/modules/search.js?v=46"></script>
-    <script src="assets/js/modules/analysis.js?v=46"></script>
-    <script src="assets/js/modules/operator.js?v=46"></script>
-    <script src="assets/js/modules/main-analytics.js?v=46"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+      </div>
+    </main>
+  </div>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
-        }
-        SyncManager.init();
-        
-        const session = checkAuth();
-        if (session) {
-            document.getElementById('user-info').innerText = `${session.displayName} (${session.roleName})`;
-        }
-
-        function buildMenu() {
-            let menu = [];
-            if (session.roleId === 'inspector') {
-                menu = [
-                    { id: 'dashboard', title: 'داشبورد', icon: '📊' }, 
-                    { id: 'new-defect', title: 'ثبت ایراد', icon: '➕' }, 
-                    { id: 'defects', title: 'لیست ایرادها', icon: '📋' },
-                    { id: 'search', title: 'جستجو', icon: '🔍' },
-                    { id: 'analysis-request', title: 'درخواست آنالیز', icon: '🧠' },
-                    { id: 'operator-errors', title: 'ایراد اپراتوری', icon: '⚠️' }
-                ];
-            } else if (session.roleId === 'expert') {
-                menu = [
-                    { id: 'dashboard', title: 'داشبورد', icon: '📊' }, 
-                    { id: 'defects', title: 'لیست ایرادها (بررسی)', icon: '🔍' }, 
-                    { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }
-                ];
-            } else if (session.roleId === 'dept_head' || session.roleId === 'office_head') {
-                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'qans', title: 'تاییدیه اخطارها', icon: '✅' }];
-            } else {
-                menu = [{ id: 'dashboard', title: 'داشبورد', icon: '📊' }, { id: 'defects', title: 'لیست ایرادها', icon: '📋' }, { id: 'qans', title: 'اخطارهای کیفی', icon: '⚠️' }, { id: 'analytics', title: 'عملکرد سازندگان', icon: '🏢' }];
-            }
-            document.getElementById('nav-items-container').innerHTML = menu.map(item => `
-                <a onclick="navigate('${item.id}')" class="nav-item" id="nav-${item.id}">
-                    <span>${item.icon}</span> ${item.title}
-                </a>
-            `).join('');
-        }
-
-        function toggleMenu() {
-            document.getElementById('main-sidebar').classList.toggle('active');
-            document.getElementById('menu-overlay').classList.toggle('active');
-        }
-
-        function navigate(view, param) {
-            if(window.innerWidth < 768) toggleMenu();
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const activeNav = document.getElementById(`nav-${view}`);
-            if(activeNav) activeNav.classList.add('active');
-            
-            if(view === 'dashboard') renderDashboard();
-            else if(view === 'new-defect') renderNewDefectForm();
-            else if(view === 'defects') renderDefectList();
-            else if(view === 'defect-detail') renderDefectDetail(param);
-            else if(view === 'expert-defect-detail') renderExpertDefectDetail(param); 
-            else if(view === 'inspector-followup') renderInspectorFollowup(param);
-            else if(view === 'qans') renderQANList();
-            else if(view === 'analytics') renderMainAnalytics();
-            else if(view === 'search') renderInspectorSearch();
-            else if(view === 'analysis-request') renderAnalysisRequest();
-            else if(view === 'operator-errors') renderOperatorErrors();
-        }
-
-        window.onload = async () => {
-            await OfflineDB.init();
-            await SLAManager.checkDeadlines();
-            buildMenu();
-            navigate('dashboard');
-        };
-    </script>
+  <script type="module" src="assets/js/pages/main.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
 </html>
