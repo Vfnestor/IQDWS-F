@@ -16,13 +16,77 @@
     <main class="app-main">
       <div class="app-main-inner">
 
+        <!-- Page header -->
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">داشبورد اکوسیستم کیفیت</h1>
+            <p class="page-subtitle">نمای کلی وضعیت کیفیت — ۷ روز گذشته</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-secondary" disabled title="در فاز ۷ فعال می‌شود">
+              خروجی گزارش
+            </button>
+            <button class="btn btn-primary" id="refresh-dashboard">
+              🔄 به‌روزرسانی
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI cards -->
+        <div class="grid-kpi" id="kpi-grid"></div>
+
+        <!-- Charts -->
+        <div class="grid-2" style="margin-bottom: var(--space-6);">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">روند عیوب — ۷ روز اخیر</h3>
+            </div>
+            <div class="card-body" id="chart-trend"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">توزیع عیوب بر اساس شدت</h3>
+            </div>
+            <div class="card-body" id="chart-severity"></div>
+          </div>
+        </div>
+
+        <!-- Lists -->
+        <div class="grid-2" style="margin-bottom: var(--space-6);">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">هشدارهای QAN فعال</h3>
+              <a href="modules/_stub.html?key=ncr&label=NCR" class="btn btn-ghost btn-sm">مشاهده همه</a>
+            </div>
+            <div class="card-body" id="qan-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">آخرین NCRها</h3>
+              <a href="modules/_stub.html?key=ncr&label=NCR" class="btn btn-ghost btn-sm">مشاهده همه</a>
+            </div>
+            <div class="card-body" id="ncr-list"></div>
+          </div>
+        </div>
+
+        <!-- Quick access -->
+        <div class="card" style="margin-bottom: var(--space-6);">
+          <div class="card-header">
+            <h3 class="card-title">دسترسی سریع</h3>
+          </div>
+          <div class="card-body">
+            <div class="grid-3" id="quick-access"></div>
+          </div>
+        </div>
+
         <!-- ▼▼▼ محتوای فعلی main.html را اینجا قرار دهید — بدون تغییر ▼▼▼ -->
         <!--
-          محتوای فعلی شامل «سامانه مادر IQDWS» و آپلود خروج را
-          دقیقاً همان‌طور که هست اینجا بگذارید.
-          فقط توجه کنید: هر استایل inline قدیمی که دارید، در فاز بعد
-          به assets/css/pages.css منتقل می‌شود.
+          محتوای «سامانه مادر IQDWS» و آپلود خروج فعلی را دقیقاً همین‌جا
+          (داخل این div) قرار دهید. هیچ چیزی از آن حذف یا تغییر نکنید.
+          در فاز بعدی در صورت نیاز، استایل‌های inline آن را به pages.css
+          منتقل می‌کنیم.
         -->
+        <div id="legacy-content"></div>
         <!-- ▲▲▲ پایان محتوای فعلی ▲▲▲ -->
 
       </div>
