@@ -1,7 +1,6 @@
 /**
  * Shell — تزریق هدر و سایدبار مشترک در همه صفحه‌ها
- * - اگر المان #app-shell در صفحه باشد، هدر و سایدبار تزریق می‌شوند.
- * - منو بر اساس سند راهبردی تعریف شده است.
+ * - هر آیتم منو یک فلگ ready دارد. اگر false باشد، به modules/_stub.html می‌رود.
  */
 import { offline } from './offline.js';
 import { store } from './store.js';
@@ -10,84 +9,90 @@ const NAV_GROUPS = [
   {
     label: 'عمومی',
     items: [
-      { key: 'dashboard', label: 'داشبورد', href: 'main.html', icon: '🏠' },
+      { key: 'dashboard', label: 'داشبورد', href: 'main.html', icon: '🏠', ready: true },
     ],
   },
   {
     label: 'تضمین کیفیت (QA)',
     items: [
-      { key: 'fmea',        label: 'FMEA',        href: 'modules/qa/fmea.html',         icon: '⚠️' },
-      { key: 'control-plan',label: 'کنترل‌پلن',    href: 'modules/qa/control-plan.html', icon: '📋' },
-      { key: 'documents',   label: 'مستندات',     href: 'modules/qa/documents.html',    icon: '📁' },
-      { key: 'audit',       label: 'ممیزی',       href: 'modules/qa/audit.html',        icon: '🔎' },
-      { key: 'calibration', label: 'کالیبراسیون', href: 'modules/qa/calibration.html',  icon: '⚖️' },
-      { key: 'training',    label: 'آموزش',       href: 'modules/qa/training.html',     icon: '🎓' },
+      { key: 'fmea',         label: 'FMEA',        href: 'modules/qa/fmea.html',         icon: '⚠️', ready: false },
+      { key: 'control-plan', label: 'کنترل‌پلن',    href: 'modules/qa/control-plan.html', icon: '📋', ready: false },
+      { key: 'documents',    label: 'مستندات',     href: 'modules/qa/documents.html',    icon: '📁', ready: false },
+      { key: 'audit',        label: 'ممیزی',       href: 'modules/qa/audit.html',        icon: '🔎', ready: false },
+      { key: 'calibration',  label: 'کالیبراسیون', href: 'modules/qa/calibration.html',  icon: '⚖️', ready: false },
+      { key: 'training',     label: 'آموزش',       href: 'modules/qa/training.html',     icon: '🎓', ready: false },
     ],
   },
   {
     label: 'کنترل کیفیت (QC)',
     items: [
-      { key: 'inspection', label: 'بازرسی',   href: 'modules/qc/inspection.html', icon: '🔍' },
-      { key: 'ncr',        label: 'NCR',       href: 'modules/qc/ncr.html',        icon: '📛' },
-      { key: 'capa',       label: 'CAPA',      href: 'modules/qc/capa.html',       icon: '♻️' },
-      { key: 'eight-d',    label: '8D',        href: 'modules/qc/eight-d.html',    icon: '🎯' },
-      { key: 'spc',        label: 'SPC',       href: 'modules/qc/spc.html',        icon: '📈' },
-      { key: 'msa',        label: 'MSA',       href: 'modules/qc/msa.html',        icon: '📐' },
-      { key: 'quarantine', label: 'قرنطینه',   href: 'modules/qc/quarantine.html', icon: '🚧' },
+      { key: 'inspection', label: 'بازرسی', href: 'modules/qc/inspection.html', icon: '🔍', ready: false },
+      { key: 'ncr',        label: 'NCR',     href: 'modules/qc/ncr.html',        icon: '📛', ready: false },
+      { key: 'capa',       label: 'CAPA',    href: 'modules/qc/capa.html',       icon: '♻️', ready: false },
+      { key: 'eight-d',    label: '8D',      href: 'modules/qc/eight-d.html',    icon: '🎯', ready: false },
+      { key: 'spc',        label: 'SPC',     href: 'modules/qc/spc.html',        icon: '📈', ready: false },
+      { key: 'msa',        label: 'MSA',     href: 'modules/qc/msa.html',        icon: '📐', ready: false },
+      { key: 'quarantine', label: 'قرنطینه', href: 'modules/qc/quarantine.html', icon: '🚧', ready: false },
     ],
   },
   {
     label: 'کیفیت تأمین‌کننده',
     items: [
-      { key: 'supplier-portal',    label: 'پورتال تأمین‌کننده', href: 'modules/supplier/portal.html',      icon: '🏭' },
-      { key: 'supplier-scorecard', label: 'کارت امتیاز',       href: 'modules/supplier/scorecard.html',   icon: '⭐' },
-      { key: 'ppap',               label: 'PPAP',              href: 'modules/supplier/ppap.html',        icon: '📦' },
-      { key: 'supplier-8d',        label: 'پاسخ 8D',           href: 'modules/supplier/response-8d.html', icon: '↩️' },
+      { key: 'supplier-portal',    label: 'پورتال تأمین‌کننده', href: 'modules/supplier/portal.html',      icon: '🏭', ready: false },
+      { key: 'supplier-scorecard', label: 'کارت امتیاز',        href: 'modules/supplier/scorecard.html',   icon: '⭐', ready: false },
+      { key: 'ppap',               label: 'PPAP',               href: 'modules/supplier/ppap.html',        icon: '📦', ready: false },
+      { key: 'supplier-8d',        label: 'پاسخ 8D',            href: 'modules/supplier/response-8d.html', icon: '↩️', ready: false },
     ],
   },
   {
     label: 'مشتری و گارانتی',
     items: [
-      { key: 'complaints', label: 'شکایات',  href: 'modules/customer/complaints.html', icon: '🗣️' },
-      { key: 'warranty',   label: 'گارانتی', href: 'modules/customer/warranty.html',   icon: '🛡️' },
+      { key: 'complaints', label: 'شکایات',  href: 'modules/customer/complaints.html', icon: '🗣️', ready: false },
+      { key: 'warranty',   label: 'گارانتی', href: 'modules/customer/warranty.html',   icon: '🛡️', ready: false },
     ],
   },
   {
     label: 'تحلیل و KPI',
     items: [
-      { key: 'analytics', label: 'داشبورد تحلیلی', href: 'modules/analytics/dashboard.html', icon: '📊' },
-      { key: 'kpi',       label: 'شاخص‌ها',        href: 'modules/analytics/kpi.html',       icon: '🎯' },
-      { key: 'trends',    label: 'روندها',         href: 'modules/analytics/trends.html',    icon: '📉' },
+      { key: 'analytics', label: 'داشبورد تحلیلی', href: 'modules/analytics/dashboard.html', icon: '📊', ready: false },
+      { key: 'kpi',       label: 'شاخص‌ها',        href: 'modules/analytics/kpi.html',       icon: '🎯', ready: false },
+      { key: 'trends',    label: 'روندها',         href: 'modules/analytics/trends.html',    icon: '📉', ready: false },
     ],
   },
   {
     label: 'مدیریت سیستم',
     items: [
-      { key: 'users',       label: 'کاربران',     href: 'modules/admin/users.html',       icon: '👥' },
-      { key: 'roles',       label: 'نقش‌ها',       href: 'modules/admin/roles.html',       icon: '🔐' },
-      { key: 'master-data', label: 'داده پایه',   href: 'modules/admin/master-data.html', icon: '🗂️' },
-      { key: 'audit-log',   label: 'لاگ سیستم',   href: 'modules/admin/audit-log.html',   icon: '📜' },
-      { key: 'settings',    label: 'تنظیمات',     href: 'modules/admin/settings.html',    icon: '⚙️' },
+      { key: 'users',       label: 'کاربران',    href: 'modules/admin/users.html',       icon: '👥', ready: false },
+      { key: 'roles',       label: 'نقش‌ها',      href: 'modules/admin/roles.html',       icon: '🔐', ready: false },
+      { key: 'master-data', label: 'داده پایه',  href: 'modules/admin/master-data.html', icon: '🗂️', ready: false },
+      { key: 'audit-log',   label: 'لاگ سیستم',  href: 'modules/admin/audit-log.html',   icon: '📜', ready: false },
+      { key: 'settings',    label: 'تنظیمات',    href: 'modules/admin/settings.html',    icon: '⚙️', ready: false },
     ],
   },
   {
     label: 'آفلاین',
     items: [
-      { key: 'sync-queue',  label: 'صف ارسال',    href: 'offline/sync-queue.html',  icon: '📤' },
-      { key: 'sync-status', label: 'وضعیت سینک',  href: 'offline/sync-status.html', icon: '🔄' },
+      { key: 'sync-queue',  label: 'صف ارسال',   href: 'offline/sync-queue.html',  icon: '📤', ready: false },
+      { key: 'sync-status', label: 'وضعیت سینک', href: 'offline/sync-status.html', icon: '🔄', ready: false },
     ],
   },
 ];
 
 function getInitials(name = 'U') {
-  return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  return String(name).trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
 function currentPagePath() {
   const parts = location.pathname.split('/').filter(Boolean);
   const file = parts.pop() || 'main.html';
   const dir = parts.pop();
-  return dir ? `modules/${dir}/${file}` : file;
+  return dir ? `${dir}/${file}` : file;
+}
+
+function resolveHref(item) {
+  if (item.ready) return item.href;
+  const params = new URLSearchParams({ key: item.key, label: item.label });
+  return `modules/_stub.html?${params.toString()}`;
 }
 
 function buildSidebar(activePath) {
@@ -103,10 +108,10 @@ function buildSidebar(activePath) {
     group.items.forEach(item => {
       const a = document.createElement('a');
       a.className = 'nav-link';
-      a.href = item.href;
-      if (item.href.endsWith(activePath) || (activePath === 'main.html' && item.key === 'dashboard')) {
-        a.classList.add('active');
-      }
+      a.href = resolveHref(item);
+      const isActive = item.ready && (item.href.endsWith(activePath) ||
+        (activePath === 'main.html' && item.key === 'dashboard'));
+      if (isActive) a.classList.add('active');
       a.innerHTML = `<span class="nav-link-icon">${item.icon}</span><span>${item.label}</span>`;
       g.appendChild(a);
     });
@@ -122,7 +127,6 @@ export function mountShell() {
   const activePath = currentPagePath();
   const session = store.get('session') || { name: 'کاربر', role: 'کاربر' };
 
-  // --- Sidebar ---
   const sidebar = document.createElement('aside');
   sidebar.className = 'app-sidebar';
   sidebar.id = 'app-sidebar';
@@ -141,7 +145,6 @@ export function mountShell() {
   footer.innerHTML = `<a class="nav-link" href="index.html"><span class="nav-link-icon">🚪</span><span>خروج</span></a>`;
   sidebar.appendChild(footer);
 
-  // --- Header ---
   const header = document.createElement('header');
   header.className = 'app-header';
   header.innerHTML = `
@@ -167,11 +170,9 @@ export function mountShell() {
     </div>
   `;
 
-  // ترتیب: سایدبار اول در DOM، هدر بعد، main داخل شل
   shell.prepend(header);
   shell.prepend(sidebar);
 
-  // --- Behavior ---
   const toggle = header.querySelector('#sidebar-toggle');
   toggle?.addEventListener('click', () => sidebar.classList.toggle('is-open'));
 
