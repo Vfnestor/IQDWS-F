@@ -38,15 +38,12 @@ body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 
 .nav-item:hover { background: var(--bg); }
 .nav-item.active { background: #e3f2fd; border-right-color: var(--primary); color: var(--primary); font-weight: bold; }
 
-/* Desktop Sidebar adjustment */
+/* Desktop Layout */
 @media (min-width: 768px) {
     .app-body { display: flex; flex: 1; overflow: hidden; }
     .sidebar { position: static; width: 250px; right: 0; box-shadow: none; border-left: 1px solid var(--border); }
     .sidebar-header { display: none; }
     .content { flex: 1; padding: 20px; overflow-y: auto; }
-}
-@media (max-width: 767px) {
-    .content { flex: 1; padding: 15px; overflow-y: auto; }
 }
 
 /* Login Page */
@@ -56,7 +53,7 @@ body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 
 .login-subtitle { color: var(--text-muted); text-align: center; font-size: 12px; margin-bottom: 25px; }
 
 /* ========================================= */
-/* استایل‌های اختصاصی تقویم جدید (شبیه تصویر) */
+/* استایل‌های تقویم */
 /* ========================================= */
 .calendar-container {
     background: #fff;
@@ -79,23 +76,8 @@ body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 
 .calendar-header .header-sub { font-size: 12px; opacity: 0.9; }
 
 .calendar-body { padding: 10px 15px 20px; }
-
-.cal-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-size: 13px;
-    color: #0288d1;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-.cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    text-align: center;
-}
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 13px; color: #0288d1; font-weight: bold; margin-bottom: 15px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
 
 .cal-day-cell {
     background: #f8f9fa;
@@ -110,38 +92,65 @@ body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 
     min-height: 60px;
 }
 .cal-day-cell:hover { background: #e3f2fd; }
+.cal-day-num { font-size: 20px; font-weight: bold; color: #333; line-height: 1.2; }
+.cal-day-greg { font-size: 11px; color: #888; margin-top: 2px; font-family: monospace; }
 
-.cal-day-num {
-    font-size: 20px;
-    font-weight: bold;
-    color: #333;
-    line-height: 1.2;
-}
-.cal-day-greg {
-    font-size: 11px;
-    color: #888;
-    margin-top: 2px;
-    font-family: monospace;
-}
-
-/* امروز */
-.cal-day-cell.today {
-    background: #b3e5fc;
-}
+.cal-day-cell.today { background: #b3e5fc; }
 .cal-day-cell.today .cal-day-num { color: #0288d1; }
 .cal-day-cell.today .cal-day-greg { color: #0288d1; }
 
-/* روزهای دارای سررسید */
-.cal-day-cell.has-deadline {
-    background: #ffcdd2;
-}
+.cal-day-cell.has-deadline { background: #ffcdd2; }
 .cal-day-cell.has-deadline .cal-day-num { color: #c62828; }
 .cal-day-cell.has-deadline .cal-day-greg { color: #c62828; }
 
-/* ترکیب امروز و سررسید (اگر امروز سررسید باشد) */
-.cal-day-cell.today.has-deadline {
-    background: #ef9a9a;
-    border: 2px solid #c62828;
+.cal-day-cell.today.has-deadline { background: #ef9a9a; border: 2px solid #c62828; }
+
+/* ========================================= */
+/* اصلاحات حالت موبایل (رفع مشکل اسکرول) */
+/* ========================================= */
+@media (max-width: 767px) {
+    /* اجازه دادن به کل صفحه برای اسکرول طبیعی */
+    html, body { overflow-x: hidden; }
+    .app-layout { 
+        height: auto !important; 
+        min-height: 100vh; 
+        overflow: visible !important; 
+    }
+    .app-header {
+        position: sticky;
+        top: 0;
+    }
+    .app-body { 
+        display: block !important; 
+        overflow: visible !important; 
+    }
+    .content { 
+        display: block;
+        padding: 15px; 
+        overflow: visible !important; 
+        width: 100%;
+    }
+    
+    /* تبدیل ستون‌ها به حالت تک‌ستونه در موبایل */
+    .form-row { flex-direction: column !important; gap: 10px !important; }
+    .form-col { 
+        flex: none !important; 
+        width: 100% !important; 
+        min-width: 0 !important; 
+        max-width: 100% !important; 
+    }
+    
+    /* فشرده‌سازی تقویم برای دیده شدن کامل در موبایل */
+    .calendar-container { border-radius: 10px; margin-top: 10px; }
+    .calendar-header { padding: 10px 12px; margin: 5px; border-radius: 8px; flex-wrap: wrap; gap: 5px; }
+    .calendar-header .header-title { font-size: 15px; }
+    .calendar-header .header-sub { font-size: 10px; }
+    .calendar-body { padding: 8px 8px 15px; }
+    .cal-weekdays { font-size: 10px; margin-bottom: 8px; }
+    .cal-grid { gap: 4px; }
+    .cal-day-cell { min-height: 45px; padding: 4px 2px; border-radius: 6px; }
+    .cal-day-num { font-size: 15px; }
+    .cal-day-greg { font-size: 9px; }
 }
 
 /* استایل مخصوص چاپ */
