@@ -1,104 +1,33 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه سازنده | IQDWS</title>
-    <link rel="stylesheet" href="assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/forms.css">
-    <link rel="stylesheet" href="assets/css/tables.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IQDWS — پورتال تأمین‌کننده</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
 </head>
 <body>
-    <div id="app" class="app-layout">
-        <header class="app-header" style="background-color: #2e7d32;">
-            <div class="header-brand">
-                <button class="menu-btn" onclick="toggleMenu()">☰</button>
-                🔧 سامانه سازنده (Sazandeh)
-            </div>
-            <div class="header-user">
-                <span id="user-info" style="font-weight:bold; font-size:13px;"></span>
-                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
-            </div>
-        </header>
-        <div class="app-body">
-            <div class="sidebar-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
-            <nav class="sidebar" id="main-sidebar">
-                <div class="sidebar-header">
-                    <span>منوی اصلی</span>
-                    <button class="close-btn" onclick="toggleMenu()">✖</button>
-                </div>
-                <a onclick="navigate('dashboard')" class="nav-item" id="nav-dashboard">📊 داشبورد</a>
-                <a onclick="navigate('qans')" class="nav-item" id="nav-qans">⚠️ اخطارهای دریافتی</a>
-                <a onclick="navigate('change-pass')" class="nav-item" id="nav-change-pass">🔑 تغییر رمز عبور</a>
-            </nav>
-            <main class="content" id="content-area"></main>
-        </div>
-    </div>
+  <div id="app-shell" class="app-shell">
+    <main class="app-main">
+      <div class="app-main-inner">
 
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/modules/utils.js"></script>
-    <script src="assets/js/modules/offline-db.js"></script>
-    <script src="assets/js/modules/8d.js"></script>
+        <!-- ▼▼▼ محتوای فعلی supplier.html را اینجا قرار دهید — بدون تغییر ▼▼▼ -->
+        <!-- ▲▲▲ پایان محتوای فعلی ▲▲▲ -->
 
-    <script>
-        const session = checkAuth();
-        if (session) {
-            document.getElementById('user-info').innerText = `${session.displayName} (${session.roleName})`;
-        }
+      </div>
+    </main>
+  </div>
 
-        function toggleMenu() {
-            document.getElementById('main-sidebar').classList.toggle('active');
-            document.getElementById('menu-overlay').classList.toggle('active');
-        }
-
-        function navigate(view) {
-            if(window.innerWidth < 768) toggleMenu();
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const activeNav = document.getElementById(`nav-${view}`);
-            if(activeNav) activeNav.classList.add('active');
-
-            const content = document.getElementById('content-area');
-
-            if (view === 'dashboard') {
-                content.innerHTML = `<h2 class="card-title">داشبورد سازنده</h2><div class="card"><p>به سامانه خوش آمدید <b>${session.displayName}</b>.</p></div>`;
-            } else if (view === 'qans') {
-                renderSupplierQANs();
-            } else if (view === 'change-pass') {
-                content.innerHTML = `
-                    <div class="card" style="max-width:500px; margin:0 auto;">
-                        <h2 class="card-title">تغییر رمز عبور</h2>
-                        <form onsubmit="changePassword(event)">
-                            <div class="form-field"><label>رمز عبور فعلی</label><input type="password" id="old_pass" class="form-control" required></div>
-                            <div class="form-field"><label>رمز عبور جدید</label><input type="password" id="new_pass" class="form-control" required></div>
-                            <button type="submit" class="btn btn-success" style="width:100%; margin-top:15px;">ذخیره رمز جدید</button>
-                        </form>
-                    </div>
-                `;
-            }
-        }
-
-        function changePassword(e) {
-            e.preventDefault();
-            const oldPass = document.getElementById('old_pass').value;
-            const newPass = document.getElementById('new_pass').value;
-
-            let users = JSON.parse(localStorage.getItem('iqdws_users'));
-            const userIndex = users.findIndex(u => u.username === session.username);
-
-            if (users[userIndex].password !== oldPass) {
-                return alert('رمز عبور فعلی اشتباه است.');
-            }
-
-            users[userIndex].password = newPass;
-            localStorage.setItem('iqdws_users', JSON.stringify(users));
-            Utils.toast('رمز عبور با موفقیت تغییر کرد');
-            document.getElementById('old_pass').value = '';
-            document.getElementById('new_pass').value = '';
-        }
-
-        window.onload = () => navigate('dashboard');
-    </script>
+  <script type="module" src="assets/js/pages/supplier.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
 </html>
