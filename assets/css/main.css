@@ -67,3 +67,37 @@ body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 
     .detail-row { border-bottom: 1px solid #eee; padding: 5px 0; }
     body { background: #fff !important; }
 }
+
+/* استایل تقویم داشبورد */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
+    margin-top: 15px;
+}
+.cal-header {
+    font-weight: bold;
+    color: #666;
+    font-size: 12px;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+.cal-day {
+    padding: 10px 0;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.cal-day:hover {
+    background: #f0f0f0;
+}
+.cal-day.has-deadline {
+    color: #c62828;
+    font-weight: bold;
+    background: #ffebee;
+}
+.cal-day.has-deadline:hover {
+    background: #ffcdd2;
+}
