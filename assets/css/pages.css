@@ -1,0 +1,44 @@
+/**
+ * Pages — استایل مشترک صفحات موجود + کلاس‌های کمکی
+ * در فاز ۱ این فایل خالی است و به تدریج با انتقال استایل‌های inline پر می‌شود.
+ */
+
+/* Login page */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand-50), var(--surface-subtle));
+  padding: var(--space-4);
+}
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-8);
+}
+.login-brand {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-3); margin-bottom: var(--space-6);
+}
+.login-brand-logo {
+  width: 56px; height: 56px; border-radius: var(--radius-lg);
+  background: var(--brand-600); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: var(--font-weight-bold); font-size: var(--font-size-xl);
+}
+.login-brand-title { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); margin: 0; }
+.login-brand-sub { font-size: var(--font-size-sm); color: var(--text-secondary); }
+
+/* Offline badge for login page (positioned) */
+.login-offline-badge {
+  position: fixed; top: var(--space-4); inset-inline-end: var(--space-4);
+  z-index: var(--z-sticky);
+}
+
+/* Content preservation wrapper */
+.legacy-content { display: contents; }
