@@ -3,34 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IQDWS — ورود به اکوسیستم کیفیت</title>
+  <title>IQDWS — اکوسیستم یکپارچه کیفیت خودرو</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="assets/css/tokens.css">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
   <link rel="stylesheet" href="assets/css/pages.css">
+  <style>
+    /* استایل اختصاصی صفحه فرود */
+    .landing-header {
+      padding: var(--space-6) var(--space-8); display: flex; justify-content: space-between; align-items: center;
+      background: var(--surface-base); border-bottom: 1px solid var(--border-default);
+    }
+    .landing-hero {
+      text-align: center; padding: var(--space-16) var(--space-4); background: var(--surface-subtle);
+      border-bottom: 1px solid var(--border-default);
+    }
+    .landing-hero h1 { font-size: 2.5rem; margin-bottom: var(--space-4); color: var(--brand-900); }
+    .landing-hero p { font-size: var(--font-size-lg); max-width: 800px; margin: 0 auto var(--space-6); color: var(--text-secondary); }
+    .landing-content { max-width: 1000px; margin: 0 auto; padding: var(--space-12) var(--space-4); }
+    .creator-card { display: flex; align-items: center; gap: var(--space-6); background: var(--surface-raised); padding: var(--space-6); border-radius: var(--radius-xl); border: 1px solid var(--border-default); }
+    .creator-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--brand-100); color: var(--brand-700); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; }
+  </style>
 </head>
-<body class="login-page">
+<body>
 
-  <div class="login-card">
-    <div class="login-brand">
-      <div class="login-brand-logo">IQ</div>
-      <h1 class="login-brand-title">IQDWS</h1>
-      <p class="login-brand-sub">اکوسیستم یکپارچه کیفیت خودرو</p>
+  <!-- هدر ساده -->
+  <header class="landing-header">
+    <div class="flex items-center gap-3">
+      <div class="sidebar-brand-logo">IQ</div>
+      <span class="text-lg text-bold">اکوسیستم IQDWS</span>
+    </div>
+    <button class="btn btn-primary" id="btn-show-login">ورود به سیستم</button>
+  </header>
+
+  <!-- بخش هیرو -->
+  <section class="landing-hero">
+    <h1>اکوسیستم یکپارچه مدیریت کیفیت خودرو</h1>
+    <p>سامانه جامع کنترل و تضمین کیفیت (QA/QC) برای صنعت خودرو ایران، با هدف ارتقای استانداردهای جهانی، کاهش ضایعات و اتصال حلقه طراحی تا گارانتی.</p>
+  </section>
+
+  <!-- محتوای اصلی -->
+  <main class="landing-content">
+    <div class="grid-2 mb-6">
+      <!-- معرفی سازنده -->
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">درباره سازنده</h3></div>
+        <div class="card-body">
+          <div class="creator-card">
+            <div class="creator-avatar">و</div>
+            <div>
+              <h4 class="mb-1">وحید فدایی</h4>
+              <p class="text-sm text-muted mb-2">معمار و توسعه‌دهنده اکوسیستم کیفیت</p>
+              <p class="text-xs text-faint">این سامانه با هدف تحول ساختاری و فناورانه در صنعت خودرو طراحی و پیاده‌سازی شده است.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- نمودار رفع ایرادات -->
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">روند رفع ایرادات (نمونه)</h3></div>
+        <div class="card-body" id="landing-chart"></div>
+      </div>
     </div>
 
-    <!-- ▼▼▼ فرم ورود فعلی خود را اینجا قرار دهید — بدون تغییر منطق ▼▼▼ -->
-    <form id="login-form" autocomplete="on">
-      <!-- فیلدهای فعلی شما: نام کاربری، رمز عبور، دکمه ورود -->
-    </form>
-    <!-- ▲▲▲ پایان فرم فعلی ▲▲▲ -->
-  </div>
+    <!-- راهنمای کار -->
+    <div class="card mb-6">
+      <div class="card-header"><h3 class="card-title">راهنمای کار با سیستم</h3></div>
+      <div class="card-body">
+        <ul class="flex flex-col gap-3 text-sm">
+          <li><strong>۱. ورود به سیستم:</strong> با استفاده از دکمه ورود در بالای صفحه، وارد پنل کاربری خود شوید.</li>
+          <li><strong>۲. نقش‌های کاربری:</strong> مدیر سیستم، بازرس خط، و کارشناس قطعه هر کدام دسترسی‌های اختصاصی به بخش‌های مربوطه دارند.</li>
+          <li><strong>۳. ثبت و پیگیری:</strong> عیوب شناسایی‌شده را در سیستم ثبت کرده و روند رفع آن‌ها را تا بستن نهایی پیگیری کنید.</li>
+          <li><strong>۴. حالت آفلاین:</strong> سیستم مجهز به PWA است؛ در صورت قطع اینترنت، داده‌ها ذخیره شده و پس از اتصال، همگام‌سازی می‌شوند.</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <!-- فوتر -->
+  <footer class="text-center p-6 text-muted text-xs border-top" style="border-top: 1px solid var(--border-default);">
+    &copy; ۲۰۲۴ - نسخه ۲.۰ سند راهبردی تحول خودرو | طراحی شده توسط وحید فدایی
+  </footer>
 
   <script type="module" src="assets/js/pages/login.js"></script>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
   </script>
 </body>
 </html>
