@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IQDWS — بازرسی و خودکنترلی</title>
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../assets/css/tokens.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/pages.css">
+</head>
+<body>
+  <div id="app-shell" class="app-shell">
+    <main class="app-main">
+      <div class="app-main-inner">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">گزارش عملکرد خودکنترلی اپراتوران</h1>
+            <p class="page-subtitle">ثبت نمرات کیفی خط مونتاژ و تکمیل‌کاری</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-create-inspection">➕ ثبت نمره جدید</button>
+          </div>
+        </div>
+
+        <div class="grid-2 mb-6">
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">خلاصه عملکرد گروه شما</h3></div>
+            <div class="card-body">
+               <div class="flex justify-between items-center mb-4">
+                  <span class="text-muted">میانگین نمره خودکنترلی:</span>
+                  <span class="score-badge" id="avg-score">۰</span>
+               </div>
+               <div class="flex justify-between items-center">
+                  <span class="text-muted">تعداد ارزیابی‌های امروز:</span>
+                  <span class="text-bold" id="total-evals">۰</span>
+               </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">لیست پرسنل و نمرات</h3></div>
+          <div class="card-body" id="inspection-table-container"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="../../assets/js/pages/inspection.js"></script>
+</body>
+</html>
