@@ -66,7 +66,7 @@ function showLoginModal() {
             const sessionData = { ...MOCK_USERS[user], username: user, token: 'mock-token-' + user };
             store.setSession(sessionData).then(() => {
               close();
-              window.location.href = sessionData.redirect;
+              window.location.href = sessionData.redirect; // مقدار redirect در MOCK_USERS برابر 'main.html' است، که از روت کار می‌کند.
             });
           } else {
             errorEl.textContent = 'نام کاربری یا رمز عبور اشتباه است.';
