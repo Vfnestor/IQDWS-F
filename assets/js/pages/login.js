@@ -3,11 +3,16 @@ import { offline } from '../offline.js';
 import { openModal, toast } from '../ui.js';
 import { lineChart } from '../charts.js';
 
-// کاربران تستی (Mock)
+// تعریف کاربران با ۷ رده مختلف برای تست
 const MOCK_USERS = {
-  'admin': { password: 'admin', name: 'مدیر سیستم', role: 'admin', redirect: 'main.html' },
-  'inspector': { password: '123', name: 'بازرس خط', role: 'inspector', redirect: 'main.html' },
-  'expert': { password: '123', name: 'کارشناس قطعه', role: 'part_expert', redirect: 'main.html' }
+  'admin':      { password: 'admin', name: 'مدیر سیستم', role: 'admin', redirect: 'main.html' },
+  'inspector':  { password: '123',   name: 'بازرس خط',   role: 'inspector', redirect: 'main.html' },
+  'expert':     { password: '123',   name: 'کارشناس قطعه', role: 'part_expert', redirect: 'main.html' },
+  'supervisor': { password: '123',   name: 'مسئول بخش',  role: 'supervisor', redirect: 'main.html' },
+  'chief':      { password: '123',   name: 'رئیس اداره', role: 'chief', redirect: 'main.html' },
+  'manager':    { password: '123',   name: 'مدیر کیفیت', role: 'quality_manager', redirect: 'main.html' },
+  'vp':         { password: '123',   name: 'معاونت',     role: 'vp', redirect: 'main.html' },
+  'ceo':        { password: '123',   name: 'مدیر عامل',  role: 'ceo', redirect: 'main.html' }
 };
 
 function initLandingChart() {
@@ -15,8 +20,8 @@ function initLandingChart() {
   if (container) {
     lineChart(container, {
       labels: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور'],
-      data: [120, 95, 80, 60, 45, 30], // روند نزولی ایرادات
-      color: '#10b981', // رنگ سبز
+      data: [120, 95, 80, 60, 45, 30],
+      color: '#10b981',
     });
   }
 }
@@ -27,13 +32,20 @@ function showLoginModal() {
     <form id="modal-login-form" class="flex flex-col gap-4">
       <div class="form-group">
         <label class="form-label">نام کاربری</label>
-        <input type="text" class="input" id="username" required placeholder="مثلا: admin">
+        <input type="text" class="input" id="username" required placeholder="مثلا: inspector">
       </div>
       <div class="form-group">
         <label class="form-label">رمز عبور</label>
         <input type="password" class="input" id="password" required placeholder="••••••">
       </div>
       <div id="login-error" class="text-danger text-sm hidden mt-2"></div>
+      
+      <div class="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 border border-gray-200">
+        <p class="font-bold mb-1">راهنمای ورود تست:</p>
+        <p>ادمین: admin / admin</p>
+        <p>سایر رده‌ها (بازرس، کارشناس و...): پسورد 123</p>
+        <p>نام کاربری‌ها: inspector, expert, supervisor, chief, manager, vp, ceo</p>
+      </div>
     </form>
   `;
 
@@ -51,7 +63,6 @@ function showLoginModal() {
           const errorEl = document.getElementById('login-error');
           
           if (MOCK_USERS[user] && MOCK_USERS[user].password === pass) {
-            // ورود موفق
             const sessionData = { ...MOCK_USERS[user], username: user, token: 'mock-token-' + user };
             store.setSession(sessionData).then(() => {
               close();
@@ -64,29 +75,20 @@ function showLoginModal() {
         }
       }
     ],
-    size: 'sm'
+    size: 'md'
   });
 }
 
 async function init() {
   initLandingChart();
-
-  // بررسی اینکه آیا کاربر قبلا لاگین کرده است یا خیر
   const session = await store.getSession();
+  const btn = document.getElementById('btn-show-login');
+  
   if (session && session.token) {
-    // اگر لاگین بود، دکمه را به "ورود به پنل" تغییر بده
-    const btn = document.getElementById('btn-show-login');
     btn.textContent = 'ورود به پنل کاربری';
     btn.onclick = () => window.location.href = 'main.html';
   } else {
-    // دکمه ورود پاپ آپ را باز کند
-    document.getElementById('btn-show-login').onclick = showLoginModal;
+    btn.onclick = showLoginModal;
   }
-
-  // نشانگر آفلاین
-  offline.onChange(({ online }) => {
-    if (!online) toast('اتصال قطع شد — حالت آفلاین فعال است', 'warning', 4000);
-  });
 }
-
 init();
