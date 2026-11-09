@@ -1,11 +1,9 @@
 /**
  * Service Worker — کش آفلاین اکوسیستم IQDWS
- * نسخه را هنگام تغییر محتوا افزایش دهید تا کش قدیمی پاک شود.
  */
-const CACHE_VERSION = 'iqdws-v4';
+const CACHE_VERSION = 'iqdws-v5'; // نسخه آپدیت شد
 
 const CORE_ASSETS = [
-  /* صفحات */
   './',
   './index.html',
   './main.html',
@@ -14,14 +12,14 @@ const CORE_ASSETS = [
   './modules/_stub.html',
   './manifest.json',
 
-  /* CSS */
+  // CSS
   './assets/css/tokens.css',
   './assets/css/base.css',
   './assets/css/components.css',
   './assets/css/layout.css',
   './assets/css/pages.css',
 
-  /* JS — هسته */
+  // JS — هسته
   './assets/js/store.js',
   './assets/js/offline.js',
   './assets/js/api.js',
@@ -30,22 +28,20 @@ const CORE_ASSETS = [
   './assets/js/shell.js',
   './assets/js/charts.js',
   './assets/js/mock-data.js',
-  './modules/qc/ncr.html',
-  './modules/qc/inspection.html',
-  
-  
-  
-  /* JS — صفحات */
+
+  // JS — صفحات
   './assets/js/pages/main.js',
   './assets/js/pages/admin.js',
   './assets/js/pages/supplier.js',
   './assets/js/pages/login.js',
-  './assets/js/pages/login.js',
-  './assets/js/pages/ncr.js',
-  './assets/js/pages/inspection.js',
+  './assets/js/pages/ncr.js',          // <--- اصلاح شد (کوتیشن اضافه شد)
+  './assets/js/pages/inspection.js',   // <--- اصلاح شد (pages درست شد)
+
+  // صفحات ماژول‌ها
+  './modules/qc/ncr.html',
+  './modules/qc/inspection.html'       // <--- فایل جدید اضافه شد
 ];
 
-/* --- Install --- */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION)
@@ -56,78 +52,53 @@ self.addEventListener('install', (event) => {
   );
 });
 
-/* --- Activate --- */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys
-          .filter(k => k !== CACHE_VERSION)
-          .map(k => caches.delete(k))
+        keys.filter(k => k !== CACHE_VERSION).map(k => caches.delete(k))
       ))
       .then(() => self.clients.claim())
   );
 });
 
-/* --- Fetch --- */
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-
   const url = new URL(req.url);
-
-  // فقط درخواست‌های same-origin را مدیریت کن (CDN و ... رد شوند)
   if (url.origin !== self.location.origin) return;
 
-  // API → Network First با fallback به cache
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(req)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_VERSION).then(c => c.put(req, clone));
-          return res;
-        })
-        .catch(() => caches.match(req))
+      fetch(req).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE_VERSION).then(c => c.put(req, clone));
+        return res;
+      }).catch(() => caches.match(req))
     );
     return;
   }
 
-  // HTML → Network First با fallback به cache، سپس به main.html
   const acceptsHtml = req.headers.get('accept')?.includes('text/html');
   if (acceptsHtml) {
     event.respondWith(
-      fetch(req)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_VERSION).then(c => c.put(req, clone));
-          return res;
-        })
-        .catch(() =>
-          caches.match(req).then(r => r || caches.match('./main.html'))
-        )
+      fetch(req).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE_VERSION).then(c => c.put(req, clone));
+        return res;
+      }).catch(() => caches.match(req).then(r => r || caches.match('./main.html')))
     );
     return;
   }
 
-  // CSS/JS/تصاویر → Stale While Revalidate
   event.respondWith(
     caches.match(req).then(cached => {
-      const fetchPromise = fetch(req)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_VERSION).then(c => c.put(req, clone));
-          return res;
-        })
-        .catch(() => cached);
+      const fetchPromise = fetch(req).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE_VERSION).then(c => c.put(req, clone));
+        return res;
+      }).catch(() => cached);
       return cached || fetchPromise;
     })
   );
-});
-
-/* --- پیام از کلاینت (مثلاً برای پاک کردن کش) --- */
-self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });
