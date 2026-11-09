@@ -1,7 +1,7 @@
 /**
  * Service Worker — کش آفلاین اکوسیستم IQDWS
  */
-const CACHE_VERSION = 'iqdws-v7'; // نسخه آپدیت شد
+const CACHE_VERSION = 'iqdws-v8'; // نسخه آپدیت شد
 
 const CORE_ASSETS = [
   './',
