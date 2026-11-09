@@ -2,7 +2,7 @@
  * Service Worker — کش آفلاین اکوسیستم IQDWS
  * نسخه را هنگام تغییر محتوا افزایش دهید تا کش قدیمی پاک شود.
  */
-const CACHE_VERSION = 'iqdws-v2';
+const CACHE_VERSION = 'iqdws-v3';
 
 const CORE_ASSETS = [
   /* صفحات */
@@ -30,12 +30,15 @@ const CORE_ASSETS = [
   './assets/js/shell.js',
   './assets/js/charts.js',
   './assets/js/mock-data.js',
-
+  './modules/qc/ncr.html',
+  
+  
   /* JS — صفحات */
   './assets/js/pages/main.js',
   './assets/js/pages/admin.js',
   './assets/js/pages/supplier.js',
   './assets/js/pages/login.js',
+  ./assets/js/pages/ncr.js,
 ];
 
 /* --- Install --- */
