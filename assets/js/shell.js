@@ -18,7 +18,7 @@ const NAV_GROUPS = [
     label: 'کنترل کیفیت (QC)',
     items: [
       { key: 'ncr', label: 'مدیریت ایرادات (NCR)', href: 'modules/qc/ncr.html', icon: '📛', ready: true, roles: OPS },
-      { key: 'inspection', label: 'بازرسی', href: 'modules/qc/inspection.html', icon: '🔍', ready: false, roles: ['admin', 'inspector'] },
+      { key: 'inspection', label: 'بازرسی', href: 'modules/qc/inspection.html', icon: '🔍', ready: true, roles: ['admin', 'inspector'] },
       { key: 'capa', label: 'اقدام اصلاحی', href: 'modules/qc/capa.html', icon: '♻️', ready: false, roles: QA_MANAGERS },
     ],
   },
