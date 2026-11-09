@@ -108,3 +108,49 @@
 .skeleton-kpi { height: 88px; border-radius: var(--radius-lg); }
 .skeleton-chart { height: 220px; border-radius: var(--radius-md); }
 .skeleton-line { height: 14px; margin-bottom: var(--space-2); border-radius: var(--radius-xs); }
+
+/* --- NCR Create Form Customizations --- */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+@media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+.bg-gray-50 { background-color: var(--gray-50); }
+.border-gray-200 { border: 1px solid var(--gray-200); }
+
+/* Registrar Field & Personnel Card */
+.registrar-field {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface-subtle); border: 1px solid var(--border-strong);
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+  cursor: pointer; transition: border-color var(--transition-fast);
+}
+.registrar-field:hover { border-color: var(--brand-400); }
+.registrar-name { font-weight: var(--font-weight-medium); color: var(--brand-700); text-decoration: underline; text-underline-offset: 2px; }
+
+.personnel-card-popover {
+  position: absolute; z-index: var(--z-tooltip, 1000);
+  background: var(--surface-raised); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  padding: var(--space-4); width: 280px;
+  display: none; flex-direction: column; gap: var(--space-3);
+  animation: fadeIn var(--transition-fast);
+}
+.personnel-card-popover.is-visible { display: flex; }
+.personnel-card-header { display: flex; align-items: center; gap: var(--space-3); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-3); }
+.personnel-avatar { width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--brand-100); color: var(--brand-700); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.personnel-info h4 { margin: 0; font-size: var(--font-size-sm); }
+.personnel-info p { margin: 0; font-size: var(--font-size-xs); color: var(--text-secondary); }
+.personnel-body { font-size: var(--font-size-xs); color: var(--text-secondary); display: grid; gap: var(--space-1); }
+
+/* Analog Clock UI */
+.analog-clock-container { display: flex; align-items: center; gap: var(--space-4); background: var(--surface-subtle); padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-default); }
+.analog-clock {
+  width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--brand-600);
+  position: relative; background: white; flex-shrink: 0;
+}
+.clock-center { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: var(--brand-900); border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
+.clock-hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center; background: var(--brand-900); border-radius: 4px; z-index: 5; }
+.clock-hour { width: 3px; height: 16px; background: var(--brand-900); }
+.clock-minute { width: 2px; height: 22px; background: var(--brand-600); }
+.clock-time-input { border: none; background: transparent; font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); width: 80px; color: var(--brand-700); outline: none; text-align: center; }
+
+/* Inspection Page specific */
+.score-badge { font-size: var(--font-size-lg); font-weight: bold; color: var(--brand-600); }
