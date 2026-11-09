@@ -32,7 +32,7 @@ const CORE_ASSETS = [
   './assets/js/mock-data.js',
   './modules/qc/ncr.html',
   './modules/qc/inspection.html',
-  './assets/js/page/inspection.js',
+  
   
   
   /* JS — صفحات */
@@ -40,7 +40,9 @@ const CORE_ASSETS = [
   './assets/js/pages/admin.js',
   './assets/js/pages/supplier.js',
   './assets/js/pages/login.js',
-  ./assets/js/pages/ncr.js,
+  './assets/js/pages/login.js',
+  './assets/js/pages/ncr.js',
+  './assets/js/pages/inspection.js',
 ];
 
 /* --- Install --- */
