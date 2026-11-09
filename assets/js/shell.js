@@ -38,15 +38,13 @@ const NAV_GROUPS = [
 ];
 
 function getInitials(name = 'U') { return String(name).trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
-function currentPagePath() {
-  const parts = location.pathname.split('/').filter(Boolean);
-  const file = parts.pop() || 'main.html';
-  const dir = parts.pop();
-  return dir ? `${dir}/${file}` : file;
-}
-function resolveHref(item) {
-  if (item.ready) return item.href;
-  return `modules/_stub.html?key=${item.key}&label=${item.label}`;
+
+// محاسبه مسیر نسبی برای جلوگیری از 404 در گیت‌هاب پیجز
+function getBasePath() {
+  const path = window.location.pathname;
+  if (path.includes('/modules/qc/')) return '../../';
+  if (path.includes('/modules/')) return '../';
+  return './';
 }
 
 function getRoleLabel(role) {
@@ -58,7 +56,7 @@ function getRoleLabel(role) {
   return map[role] || role;
 }
 
-function buildSidebar(activePath, userRole) {
+function buildSidebar(activePath, userRole, basePath) {
   const nav = document.createElement('nav');
   nav.className = 'sidebar-nav';
   
@@ -72,8 +70,16 @@ function buildSidebar(activePath, userRole) {
     
     allowedItems.forEach(item => {
       const a = document.createElement('a');
-      a.className = `nav-link ${item.href.endsWith(activePath) || (activePath === 'main.html' && item.key === 'dashboard') ? 'active' : ''}`;
-      a.href = resolveHref(item);
+      // استفاده از مسیر نسبی
+      const finalHref = item.ready ? `${basePath}${item.href}` : `${basePath}modules/_stub.html?key=${item.key}&label=${item.label}`;
+      
+      // بررسی فعال بودن لینک
+      const currentPath = activePath.split('/').pop();
+      const itemPath = item.href.split('/').pop();
+      const isActive = item.ready && (currentPath === itemPath || (currentPath === 'main.html' && item.key === 'dashboard'));
+      
+      a.className = `nav-link ${isActive ? 'active' : ''}`;
+      a.href = finalHref;
       a.innerHTML = `<span class="nav-link-icon">${item.icon}</span><span>${item.label}</span>`;
       g.appendChild(a);
     });
@@ -85,10 +91,12 @@ function buildSidebar(activePath, userRole) {
 export function mountShell() {
   const shell = document.getElementById('app-shell');
   if (!shell) return;
-  const activePath = currentPagePath();
-  const session = store.get('session') || { name: 'مهمان', role: 'guest' };
   
-  if (session.role === 'guest') { window.location.href = 'index.html'; return; }
+  const session = store.get('session') || { name: 'مهمان', role: 'guest' };
+  if (session.role === 'guest') { window.location.href = getBasePath() + 'index.html'; return; }
+
+  const basePath = getBasePath();
+  const activePath = window.location.pathname;
 
   const sidebar = document.createElement('aside');
   sidebar.className = 'app-sidebar';
@@ -102,7 +110,7 @@ export function mountShell() {
       </div>
     </div>
   `;
-  sidebar.appendChild(buildSidebar(activePath, session.role));
+  sidebar.appendChild(buildSidebar(activePath, session.role, basePath));
   
   const footer = document.createElement('div');
   footer.className = 'sidebar-footer';
@@ -132,7 +140,7 @@ export function mountShell() {
 
   document.getElementById('sidebar-toggle')?.addEventListener('click', () => sidebar.classList.toggle('is-open'));
   document.getElementById('btn-logout').addEventListener('click', async (e) => {
-    e.preventDefault(); await store.clearSession(); window.location.href = 'index.html';
+    e.preventDefault(); await store.clearSession(); window.location.href = getBasePath() + 'index.html';
   });
 
   const badge = header.querySelector('#offline-badge');
