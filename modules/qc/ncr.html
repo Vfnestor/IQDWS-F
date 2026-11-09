@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IQDWS — مدیریت ایرادات</title>
+  <link rel="stylesheet" href="../../assets/css/tokens.css">
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/pages.css">
+</head>
+<body>
+  <div id="app-shell" class="app-shell">
+    <main class="app-main">
+      <div class="app-main-inner">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">مدیریت ایرادات (NCR)</h1>
+            <p class="page-subtitle">گردش کار ثبت، بررسی و بستن ایرادات</p>
+          </div>
+          <div class="page-actions">
+            <!-- دکمه ثبت فقط برای بازرس و ادمین نمایش داده می شود -->
+            <button class="btn btn-primary" id="btn-create-ncr" style="display:none;">➕ ثبت ایراد جدید</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" id="ncr-table-container">
+            <!-- جدول اینجا لود می‌شود -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../../assets/js/pages/ncr.js"></script>
+</body>
+</html>
