@@ -2,7 +2,6 @@ import { store } from '../store.js';
 import { mountShell } from '../shell.js';
 import { openModal, toast } from '../ui.js';
 
-// دیتای تستی
 let MOCK_OPERATORS = [
   { id: '1', name: 'علی رضایی', code: 'OP-101', group: 'مونتاژ ۱ - گروه ۲', score: 85 },
   { id: '2', name: 'حسن محمدی', code: 'OP-102', group: 'مونتاژ ۱ - گروه ۲', score: 92 },
@@ -14,7 +13,6 @@ async function init() {
   if (session) store.set('session', session);
   mountShell();
 
-  // فقط بازرس و ادمین دکمه ثبت دارند
   if (['inspector', 'admin'].includes(session.role)) {
     document.getElementById('btn-create-inspection').onclick = openCreateModal;
   } else {
@@ -93,7 +91,7 @@ function openCreateModal() {
           }
 
           const op = MOCK_OPERATORS.find(o => o.id === id);
-          if (op) op.score = score; // آپدیت دیتا
+          if (op) op.score = score;
           
           close();
           renderTable();
